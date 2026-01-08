@@ -72,6 +72,7 @@ public class TurretSubsystem extends SubsystemBase {
         encoder = hardwareMap.get(DcMotorEx.class, "turretEncoder");
         encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         encoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        // the turret encoder should increase when turning left
         // encoder.setDirection(DcMotorSimple.Direction.REVERSE);
 
         controller = new PIDFController(kP, kI, kD, kV);
@@ -131,31 +132,66 @@ public class TurretSubsystem extends SubsystemBase {
         double fusedY = odoPose.getY(DistanceUnit.INCH);
         double fusedH = odoPose.getHeading(AngleUnit.DEGREES);
 
-        // Simple Fusion: If Chassis Limelight sees a tag with high confidence, use it
-        LLResult result = limelightChassis.getLatestResult();
-        if (result != null && result.isValid()) {
-            Pose3D botPose3D = result.getBotpose();
-            if (botPose3D != null) {
-                // Limelight returns METERS (standard), convert to INCHES
-                double visionX_in = botPose3D.getPosition().x * 39.3701;
-                double visionY_in = botPose3D.getPosition().y * 39.3701;
+        double visionXSum = 0;
+        double visionYSum = 0;
+        int visionCount = 0;
 
-                // Calculate distance between current odometry and vision to detect "jumps"
-                double dist = Math.hypot(visionX_in - fusedX, visionY_in - fusedY);
+        // 1. Chassis Limelight
+        LLResult resultChassis = limelightChassis.getLatestResult();
+        if (resultChassis != null && resultChassis.isValid()) {
+             Pose3D botPose3D = resultChassis.getBotpose();
+             if (botPose3D != null) {
+                 visionXSum += botPose3D.getPosition().x * 39.3701; // Meters to Inches
+                 visionYSum += botPose3D.getPosition().y * 39.3701;
+                 visionCount++;
+             }
+        }
 
-                // ALPHA FILTER:
-                // If the difference is huge (start of match or lost tracking), trust vision more (0.5).
-                // If merely drifting, correct slowly (0.1).
-                double alpha = (dist > 10.0) ? 0.5 : 0.1;
+        // 2. Turret Limelight (Corrected)
+        LLResult resultTurret = limelightTurret.getLatestResult();
+        if (resultTurret != null && resultTurret.isValid()) {
+             Pose3D camPose3D = resultTurret.getBotpose();
+             if (camPose3D != null) {
+                 // Treating BotPose as Camera Field Pose (assuming 0 offset in LL Config)
+                 double camX = camPose3D.getPosition().x * 39.3701;
+                 double camY = camPose3D.getPosition().y * 39.3701;
+                 double camH = camPose3D.getOrientation().getYaw(AngleUnit.DEGREES);
 
-                fusedX = (1 - alpha) * fusedX + alpha * visionX_in;
-                fusedY = (1 - alpha) * fusedY + alpha * visionY_in;
+                 // Correct for Turret Camera Offset (Back-calculate Robot Center)
+                 // TODO: Measure exact radius from turret center to camera lens
+                 double turretRadius = 6.0; // Estimate: 6 inches
 
-                // IMPORTANT: Write the corrected pose back to the Pinpoint hardware
-                // This ensures that when vision is lost, odometry continues from the CORRECTED spot.
-                Pose2D correctedPose = new Pose2D(DistanceUnit.INCH, fusedX, fusedY, AngleUnit.DEGREES, fusedH);
-                pinpoint.setPosition(correctedPose);
-            }
+                 // Calculate Robot Center based on Camera Field Pose and Camera Field Heading
+                 // We assume camera is mounted facing 'forward' on the turret
+                 double robotX = camX - (turretRadius * Math.cos(Math.toRadians(camH)));
+                 double robotY = camY - (turretRadius * Math.sin(Math.toRadians(camH)));
+
+                 visionXSum += robotX;
+                 visionYSum += robotY;
+                 visionCount++;
+             }
+        }
+
+        // Fusion Logic
+        if (visionCount > 0) {
+            double visionX = visionXSum / visionCount;
+            double visionY = visionYSum / visionCount;
+
+            // Calculate distance between current odometry and vision to detect "jumps"
+            double dist = Math.hypot(visionX - fusedX, visionY - fusedY);
+
+            // ALPHA FILTER:
+            // If the difference is huge (start of match or lost tracking), trust vision more.
+            // If merely drifting, correct slowly.
+            double alpha = (dist > 10.0) ? 0.5 : 0.05 * visionCount; // More sensors = slightly more trust
+
+            fusedX = (1 - alpha) * fusedX + alpha * visionX;
+            fusedY = (1 - alpha) * fusedY + alpha * visionY;
+
+            // IMPORTANT: Write the corrected pose back to the Pinpoint hardware
+            // This ensures that when vision is lost, odometry continues from the CORRECTED spot.
+            Pose2D correctedPose = new Pose2D(DistanceUnit.INCH, fusedX, fusedY, AngleUnit.DEGREES, fusedH);
+            pinpoint.setPosition(correctedPose);
         }
 
         // Update our subsystem state
@@ -184,33 +220,28 @@ public class TurretSubsystem extends SubsystemBase {
         }
     }
 
-    public void setTargetPosition(double degrees) {
-        this.targetDegrees = Range.clip(degrees, 0, 355);
-//      this.targetDegrees = degrees;
-        controller.setSetPoint(targetDegrees);
-    }
-
     public double getPositionDegrees() {
         return encoder.getCurrentPosition() / TICKS_PER_DEGREE;
     }
 
+    private static final double MAX_DEGREES = 177.0;
+    private static final double MIN_DEGREES = -177.0;
+
     private void setPower(double power) {
-        if (getPositionDegrees() > 355 && power > 0) power = 0;
-        if (getPositionDegrees() < 0 && power < 0) power = 0;
+        double currentPos = getPositionDegrees();
+        // Soft Stops
+        if (currentPos > MAX_DEGREES && power > 0) power = 0;
+        if (currentPos < MIN_DEGREES && power < 0) power = 0;
 
         power = Range.clip(power, -1.0, 1.0);
         servoLeft.setPower(power);
         servoRight.setPower(power);
     }
 
-    public void updatePID(double v, double p, double i, double d) {
-        controller.setPIDF(p, i, d, v);
+    public void setTargetPosition(double degrees) {
+        this.targetDegrees = Range.clip(degrees, MIN_DEGREES, MAX_DEGREES);
+        controller.setSetPoint(targetDegrees);
     }
-
-    public void alignToTargetTXbased(double tx) {
-        setTargetPosition(getPositionDegrees() + tx);
-    }
-
 
     public void alignToTargetRobotPoseBased(double robotX, double robotY) {
         double goalX = (alliance == Alliance.BLUE) ? GOAL_BLUE_X : GOAL_RED_X;
@@ -218,9 +249,22 @@ public class TurretSubsystem extends SubsystemBase {
 
         double deltaX = goalX - robotX;
         double deltaY = goalY - robotY;
-        double angleToGoal = Math.toDegrees(Math.atan2(deltaY, deltaX));
 
-        setTargetPosition(angleToGoal);
+        // Calculate Absolute Field Angle to Goal
+        double fieldAngleToGoal = Math.toDegrees(Math.atan2(deltaY, deltaX));
+
+        // Calculate Robot Heading (need to fetch from Pinpoint or Odometry)
+        // Note: currentRobotPose is updated in periodic() from Pinpoint+Vision
+        double robotHeading = currentRobotPose.getHeading(AngleUnit.DEGREES);
+
+        // Calculate Turret Relative Angle (Goal - Robot)
+        double relativeAngle = fieldAngleToGoal - robotHeading;
+
+        // Normalize to -180 to 180 to find shortest path
+        while (relativeAngle > 180) relativeAngle -= 360;
+        while (relativeAngle <= -180) relativeAngle += 360;
+
+        setTargetPosition(relativeAngle);
     }
 
     public double getTargetDegrees() {
