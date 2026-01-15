@@ -16,7 +16,7 @@ public class ManualTurretCommand extends CommandBase {
 
     @Override
     public void execute() {
-        turret.manual(rotationSupplier.getAsDouble());
+//        turret.manual(rotationSupplier.getAsDouble());
     }
 }
 
