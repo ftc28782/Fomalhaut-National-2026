@@ -12,7 +12,7 @@ import com.pedropathing.util.Timer;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
 
 
-@Autonomous
+@Autonomous(name = "PedroAutonomous")
 public class PedroAutonomous extends OpMode {
 
     private Follower follower;
