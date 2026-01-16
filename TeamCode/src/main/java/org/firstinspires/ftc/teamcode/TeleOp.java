@@ -83,5 +83,7 @@ public class TeleOp extends CommandOpMode {
 //        telemetryData.addData("Robot Pose (Turret Est.) Y", robot.turretSubsystem.getCurrentRobotPose().getY(org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.INCH));
 
         telemetryData.update();
+
+
     }
 }

@@ -20,6 +20,9 @@ public class PedroAutonomous extends OpMode {
 
     public int pathState = 0;
 
+    private static double StartX = 33.60151691948658 ;
+    private static double StartY = 135.93465577596265;
+
     private Paths paths;
 
     public static class Paths {
@@ -44,7 +47,7 @@ public class PedroAutonomous extends OpMode {
         public Paths(Follower follower) {
             StartShot1 = follower.pathBuilder().addPath(
                             new BezierLine(
-                                    new Pose(32.261, 136),
+                                    new Pose(StartX, StartY),
 
                                     new Pose(56.000, 87.000)
                             )
@@ -330,7 +333,6 @@ public class PedroAutonomous extends OpMode {
                 if (!follower.isBusy()) {
                     follower.followPath(paths.EndPoint);
                 }
-                setPathState(17);
 
             default:
                 telemetry.addLine("Autonomous Finished");
@@ -349,7 +351,7 @@ public class PedroAutonomous extends OpMode {
         pathTimer = new Timer();
         opModeTimer = new Timer();
         follower = Constants.createFollower(hardwareMap);
-        Pose startPose = new Pose(32.261, 136, Math.toRadians(180));
+        Pose startPose = new Pose(StartX, StartY, Math.toRadians(180));
         follower.setPose(startPose);
         paths = new Paths(follower);
 
