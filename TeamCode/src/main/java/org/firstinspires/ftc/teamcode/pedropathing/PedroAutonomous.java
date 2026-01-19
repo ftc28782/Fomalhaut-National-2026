@@ -20,8 +20,8 @@ public class PedroAutonomous extends OpMode {
 
     public int pathState = 0;
 
-    private static double StartX = 33.60151691948658 ;
-    private static double StartY = 135.93465577596265;
+    private static double StartX = 30.3 ;
+    private static double StartY = 132.5;
 
     private Paths paths;
 
@@ -59,7 +59,7 @@ public class PedroAutonomous extends OpMode {
                             new BezierCurve(
                                     new Pose(56.000, 87.000),
                                     new Pose(57.524, 68.226),
-                                    new Pose(45.000, 60.000)
+                                    new Pose(45.000, 58.5)
                             )
                     ).setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(180))
 
@@ -67,9 +67,9 @@ public class PedroAutonomous extends OpMode {
 
             Intake1 = follower.pathBuilder().addPath(
                             new BezierLine(
-                                    new Pose(45.000, 60.000),
+                                    new Pose(45.000, 58.5),
 
-                                    new Pose(8.000, 60.000)
+                                    new Pose(8.000, 58.5)
                             )
                     ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
 
@@ -209,7 +209,7 @@ public class PedroAutonomous extends OpMode {
                             new BezierLine(
                                     new Pose(56.000, 87.000),
 
-                                    new Pose(40.000, 72.000)
+                                    new Pose(42.000, 72.000)
                             )
                     ).setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(180))
 
