@@ -20,8 +20,10 @@ public class PedroAutonomous extends OpMode {
 
     public int pathState = 0;
 
-    private static double StartX = 30.3 ;
+    private static double StartX = 30.3;
     private static double StartY = 132.5;
+
+    private static String Phrase = "Nada";
 
     private Paths paths;
 
@@ -374,5 +376,6 @@ public class PedroAutonomous extends OpMode {
         telemetry.addData("Y", follower.getPose().getY());
         telemetry.addData("Heading", follower.getPose().getHeading());
         telemetry.addData("Path State", pathState);
+        telemetry.addData("Ação:", Phrase);
     }
 }

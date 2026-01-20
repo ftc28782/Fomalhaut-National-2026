@@ -20,9 +20,8 @@ public class PedroTest extends OpMode {
 
     public int pathState = 0;
 
-    private static double StartX = 33.60151691948658 ;
-    private static double StartY = 135.93465577596265;
-
+    private static double StartX = 30.3 ;
+    private static double StartY = 132.5;
     private Paths paths;
 
     public static class Paths {
@@ -34,7 +33,7 @@ public class PedroTest extends OpMode {
 
                                     new Pose(72.000, 72.000)
                             )
-                    ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(135))
+                    ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
 
                     .build();
         }
