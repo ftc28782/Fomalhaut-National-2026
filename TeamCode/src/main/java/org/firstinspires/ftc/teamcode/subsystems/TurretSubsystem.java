@@ -25,8 +25,8 @@ public class TurretSubsystem extends SubsystemBase {
 //    private Alliance alliance = Alliance.BLUE;
 //
 //    // TODO: Fill goal coordinates
-//    private final double GOAL_BLUE_X = 0.0, GOAL_BLUE_Y = 0.0;
-//    private final double GOAL_RED_X = 0.0, GOAL_RED_Y = 0.0;
+//    private final double GOAL_BLUE_X = -57, GOAL_BLUE_Y = -59;
+//    private final double GOAL_RED_X = 57, GOAL_RED_Y = 59;
 //
 //    private final CRServo servoLeft, servoRight;
 //    private final DcMotorEx encoder;
