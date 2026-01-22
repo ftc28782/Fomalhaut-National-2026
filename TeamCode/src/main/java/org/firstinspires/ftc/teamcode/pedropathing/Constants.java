@@ -26,9 +26,7 @@ public class Constants {
             .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.004,0.0,0.00015,0.3,0.0))
             .forwardZeroPowerAcceleration(-32.718)
             .lateralZeroPowerAcceleration(-46)
-            .centripetalScaling(0.0005)
-            ;
-
+            .centripetalScaling(0.0005);
 
     public static MecanumConstants driveConstants = new MecanumConstants()
     .maxPower(0.65)
@@ -44,7 +42,6 @@ public class Constants {
     .yVelocity(71.94)
     .useBrakeModeInTeleOp(true);
 
-
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(0)
             .strafePodX(0)
@@ -56,7 +53,6 @@ public class Constants {
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100,
             1.4,
             1);
-
 
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)

@@ -18,6 +18,7 @@ public class PedroAutonomous extends OpMode {
 
     public int pathState = 0;
     private boolean stateInit = false;
+    private boolean arrived = false;
 
     private static double StartX = 30.3;
     private static double StartY = 132.5;
@@ -173,7 +174,19 @@ public class PedroAutonomous extends OpMode {
                     Phrase = "Shot 1";
                     stateInit = true;
                 }
-                if (!follower.isBusy()) setPathState(1);
+
+                if (!follower.isBusy() && !arrived) {
+                    arrived = true;
+                    pathTimer.resetTimer();
+                }
+                if (!follower.isBusy()) {
+                    Phrase = "Shooting";
+
+
+                    if (pathTimer.getElapsedTimeSeconds() > 3) {
+                        setPathState(1);
+                    }
+                }
                 break;
 
             case 1:
@@ -183,8 +196,6 @@ public class PedroAutonomous extends OpMode {
                     stateInit = true;
                 }
                 if (!follower.isBusy()) setPathState(2);
-
-
                 break;
 
             case 2:
@@ -197,27 +208,38 @@ public class PedroAutonomous extends OpMode {
                 break;
 
             case 3:
-                if (!stateInit) {
-                    follower.followPath(paths.Return1Shot2);
-                    Phrase = "Shot 2";
-                    stateInit = true;
-                }
-                if (!follower.isBusy()) setPathState(4);
-                break;
+                    if (!stateInit) {
+                        follower.followPath(paths.StartShot1);
+                        Phrase = "Shot 2";
+                        stateInit = true;
+                    }
 
+                    if (!follower.isBusy() && !arrived) {
+                        arrived = true;
+                        pathTimer.resetTimer();
+                    }
+                    if (!follower.isBusy()) {
+                        Phrase = "Shooting";
+
+
+                        if (pathTimer.getElapsedTimeSeconds() > 3) {
+                            setPathState(4);
+                        }
+                    }
+                break;
             case 4:
                 if (!stateInit) {
-                    Phrase = "Shooting";
-                    pathTimer.resetTimer();
+                    follower.followPath(paths.Go1);
+                    Phrase = "Go 1";
                     stateInit = true;
                 }
-                if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 1.5) setPathState(5);
+                if (!follower.isBusy()) setPathState(5);
                 break;
 
             case 5:
                 if (!stateInit) {
-                    follower.followPath(paths.Go1);
-                    Phrase = "Go 1";
+                    follower.followPath(paths.Return2Shot3);
+                    Phrase = "Shot 3";
                     stateInit = true;
                 }
                 if (!follower.isBusy()) setPathState(6);
@@ -225,8 +247,8 @@ public class PedroAutonomous extends OpMode {
 
             case 6:
                 if (!stateInit) {
-                    follower.followPath(paths.Return2Shot3);
-                    Phrase = "Shot 3";
+                    follower.followPath(paths.Go2);
+                    Phrase = "Go 2";
                     stateInit = true;
                 }
                 if (!follower.isBusy()) setPathState(7);
@@ -234,8 +256,8 @@ public class PedroAutonomous extends OpMode {
 
             case 7:
                 if (!stateInit) {
-                    follower.followPath(paths.Go2);
-                    Phrase = "Go 2";
+                    follower.followPath(paths.Return3Shot4);
+                    Phrase = "Shot 4";
                     stateInit = true;
                 }
                 if (!follower.isBusy()) setPathState(8);
@@ -243,8 +265,8 @@ public class PedroAutonomous extends OpMode {
 
             case 8:
                 if (!stateInit) {
-                    follower.followPath(paths.Return3Shot4);
-                    Phrase = "Shot 4";
+                    follower.followPath(paths.Go3);
+                    Phrase = "Go 3";
                     stateInit = true;
                 }
                 if (!follower.isBusy()) setPathState(9);
@@ -252,8 +274,8 @@ public class PedroAutonomous extends OpMode {
 
             case 9:
                 if (!stateInit) {
-                    follower.followPath(paths.Go3);
-                    Phrase = "Go 3";
+                    follower.followPath(paths.Return4Shot5);
+                    Phrase = "Shot 5";
                     stateInit = true;
                 }
                 if (!follower.isBusy()) setPathState(10);
@@ -261,8 +283,8 @@ public class PedroAutonomous extends OpMode {
 
             case 10:
                 if (!stateInit) {
-                    follower.followPath(paths.Return4Shot5);
-                    Phrase = "Shot 5";
+                    follower.followPath(paths.ToIntake2);
+                    Phrase = "To Intake 2";
                     stateInit = true;
                 }
                 if (!follower.isBusy()) setPathState(11);
@@ -270,8 +292,8 @@ public class PedroAutonomous extends OpMode {
 
             case 11:
                 if (!stateInit) {
-                    follower.followPath(paths.ToIntake2);
-                    Phrase = "To Intake 2";
+                    follower.followPath(paths.Intake2);
+                    Phrase = "Intaking 2";
                     stateInit = true;
                 }
                 if (!follower.isBusy()) setPathState(12);
@@ -279,8 +301,8 @@ public class PedroAutonomous extends OpMode {
 
             case 12:
                 if (!stateInit) {
-                    follower.followPath(paths.Intake2);
-                    Phrase = "Intaking 2";
+                    follower.followPath(paths.Return5Shot6);
+                    Phrase = "Shot 6";
                     stateInit = true;
                 }
                 if (!follower.isBusy()) setPathState(13);
@@ -288,8 +310,8 @@ public class PedroAutonomous extends OpMode {
 
             case 13:
                 if (!stateInit) {
-                    follower.followPath(paths.Return5Shot6);
-                    Phrase = "Shot 6";
+                    follower.followPath(paths.ToIntake3);
+                    Phrase = "To Intake 3";
                     stateInit = true;
                 }
                 if (!follower.isBusy()) setPathState(14);
@@ -297,8 +319,8 @@ public class PedroAutonomous extends OpMode {
 
             case 14:
                 if (!stateInit) {
-                    follower.followPath(paths.ToIntake3);
-                    Phrase = "To Intake 3";
+                    follower.followPath(paths.Intake3);
+                    Phrase = "Intaking 3";
                     stateInit = true;
                 }
                 if (!follower.isBusy()) setPathState(15);
@@ -306,23 +328,14 @@ public class PedroAutonomous extends OpMode {
 
             case 15:
                 if (!stateInit) {
-                    follower.followPath(paths.Intake3);
-                    Phrase = "Intaking 3";
+                    follower.followPath(paths.Return6Shot7);
+                    Phrase = "Shot 7";
                     stateInit = true;
                 }
                 if (!follower.isBusy()) setPathState(16);
                 break;
 
             case 16:
-                if (!stateInit) {
-                    follower.followPath(paths.Return6Shot7);
-                    Phrase = "Shot 7";
-                    stateInit = true;
-                }
-                if (!follower.isBusy()) setPathState(17);
-                break;
-
-            case 17:
                 if (!stateInit) {
                     follower.followPath(paths.EndPoint);
                     Phrase = "End";
@@ -335,6 +348,7 @@ public class PedroAutonomous extends OpMode {
     public void setPathState(int newState) {
         pathState = newState;
         stateInit = false;
+        arrived = false;
         pathTimer.resetTimer();
     }
 
@@ -363,6 +377,7 @@ public class PedroAutonomous extends OpMode {
         telemetry.addData("Heading", follower.getPose().getHeading());
         telemetry.addData("State", pathState);
         telemetry.addData("Action", Phrase);
+        telemetry.addData("PathTimer", pathTimer.getElapsedTimeSeconds());
         telemetry.update();
     }
 }

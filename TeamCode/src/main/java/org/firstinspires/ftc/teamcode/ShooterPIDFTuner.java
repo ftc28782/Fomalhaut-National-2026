@@ -13,6 +13,7 @@ public class ShooterPIDFTuner extends OpMode {
     public DcMotorEx shooter;
     public double FullSpeed = 312; //rpm
     public double HalfSpeed = 156; //rpm
+    public double TicksPerRev = 537.7;
     double TargetVelocity = FullSpeed;
     double F = 0;
     double P = 0;
@@ -55,9 +56,9 @@ public class ShooterPIDFTuner extends OpMode {
             PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P,0,0,F);
             shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
 
-            shooter.setVelocity(TargetVelocity * 537.7 / 60);
+            shooter.setVelocity(TargetVelocity * TicksPerRev / 60);
 
-            double CurrentVelocity = (shooter.getVelocity() * 60 / 537.7);
+            double CurrentVelocity = (shooter.getVelocity() * 60 / TicksPerRev);
             double error = TargetVelocity - CurrentVelocity;
 
             telemetry.addData("Target Velocity", TargetVelocity);
