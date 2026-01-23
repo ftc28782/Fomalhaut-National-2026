@@ -8,7 +8,6 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.pedropathing.util.Timer;
-import org.firstinspires.ftc.teamcode.pedropathing.Constants;
 
 @Autonomous(name = "PedroAutonomous")
 public class PedroAutonomous extends OpMode {
