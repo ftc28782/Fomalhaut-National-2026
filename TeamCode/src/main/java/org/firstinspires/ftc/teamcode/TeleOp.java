@@ -20,7 +20,7 @@ public class TeleOp extends CommandOpMode {
     GamepadEx driver;
 //    GamepadEx operator;
     SunriseRobot robot;
-    private double Speed = 0.65;
+    private double Speed = 1;
 
     @Override
     public void initialize() {
@@ -63,11 +63,11 @@ public class TeleOp extends CommandOpMode {
         }
         reset();
     }
-
     @Override
     public void run() {
         super.run();
 
+        //Speed Controller (to delete later)
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
         follower.update();
         follower.setMaxPower(Speed);

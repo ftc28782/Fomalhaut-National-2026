@@ -29,7 +29,7 @@ public class Constants {
             .centripetalScaling(0.0005);
 
     public static MecanumConstants driveConstants = new MecanumConstants()
-    .maxPower(0.65)
+    .maxPower(1)
     .leftFrontMotorName("frontLeft")
     .leftRearMotorName("backLeft")
     .rightFrontMotorName("frontRight")
