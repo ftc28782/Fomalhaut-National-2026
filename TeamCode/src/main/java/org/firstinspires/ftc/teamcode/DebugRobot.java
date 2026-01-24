@@ -23,7 +23,7 @@ public class DebugRobot extends OpMode { //Simple robot for tests
     SunriseRobot robot;
     private double Sinal = -1;
     private String SinalAtual = "-";
-    private double shooter_power = 0.5;
+    private double shooter_power = 0.3;
     private double hood_position = 0;
 
     @Override
