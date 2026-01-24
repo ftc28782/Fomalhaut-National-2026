@@ -34,11 +34,11 @@ public class DebugRobot extends OpMode { //Simple robot for tests
         follower.startTeleopDrive();
 
         intake = hardwareMap.get(DcMotor.class, "intake");
-        shooter1 = hardwareMap.get(DcMotor.class, "shooter1");
-        shooter2 = hardwareMap.get(DcMotor.class, "shooter2");
-        servo1 = hardwareMap.get(CRServo.class, "servo1");
-        servo2 = hardwareMap.get(CRServo.class, "servo2");
-        hoodservo = hardwareMap.get(Servo.class, "hood_servo");
+        shooter1 = hardwareMap.get(DcMotor.class, "shooterMotor1");
+        shooter2 = hardwareMap.get(DcMotor.class, "shooterMotor2");
+        servo1 = hardwareMap.get(CRServo.class, "turretLeft");
+        servo2 = hardwareMap.get(CRServo.class, "turretRight");
+        hoodservo = hardwareMap.get(Servo.class, "hoodServo");
 
     }
 
@@ -48,10 +48,11 @@ public class DebugRobot extends OpMode { //Simple robot for tests
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
         follower.update();
 
-        telemetry.addLine("RT para alternar entre + e -");
+        telemetry.addLine("B para alternar entre + e -");
         telemetry.addData("Sinal atual:", SinalAtual);
         telemetry.addData("Y para alterar a direção do Hood", hood_position);
         telemetry.addData("X para alterar a potência do Shooter", shooter_power);
+        telemetry.addLine("Obs: Se o shooter estiver invertido inverta o sinal da potência do shooter");
         telemetry.update();
 
         if (Sinal < 0) {
@@ -60,7 +61,7 @@ public class DebugRobot extends OpMode { //Simple robot for tests
             SinalAtual = "+";
         }
 
-        if (gamepad1.bWasPressed()) { //Signal alternance
+        if (gamepad1.bWasPressed()) { //Signal alternation
             Sinal = Sinal * -1;
         }
 

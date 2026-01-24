@@ -212,7 +212,7 @@ public class TurretSubsystem extends SubsystemBase {
 //    }
 //
 //    public void manual(double power) {
-//        if (Math.abs(power) > 0.1) {
+//        if (Math.abs(power) > 0.1) { //FIXME: Talvez limitar a 0.1 aqui pode atrapalhar o PIDF
 //             setAimingMode(AimingMode.MANUAL);
 //             setPower(power);
 //        } else if (aimingMode == AimingMode.MANUAL) {
