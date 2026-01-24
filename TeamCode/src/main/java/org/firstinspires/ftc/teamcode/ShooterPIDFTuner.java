@@ -10,10 +10,10 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 @TeleOp(name = "ShooterPIDFTuner")
 public class ShooterPIDFTuner extends OpMode {
 
-    public DcMotorEx shooter;
-    public double FullSpeed = 312; //rpm
-    public double HalfSpeed = 156; //rpm
-    public double TicksPerRev = 537.7; //TODO: Adapt RPM and TicksPerRev
+    public DcMotorEx shooter1,shooter2;
+    public double FullSpeed = 4000; //rpm
+    public double HalfSpeed = 2000; //rpm
+    public double TicksPerRev = 42; //TODO: Adapt RPM and TicksPerRev
     double TargetVelocity = FullSpeed;
     double F = 0;
     double P = 0;
@@ -21,11 +21,15 @@ public class ShooterPIDFTuner extends OpMode {
     int stepIndex = 1;
     @Override
     public void init() {
-        shooter = hardwareMap.get(DcMotorEx.class, "shooter");
-        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shooter.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooter1 = hardwareMap.get(DcMotorEx.class, "shooterMotor1");
+        shooter2 = hardwareMap.get(DcMotorEx.class, "shooterMotor2");
+        shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shooter1.setDirection(DcMotorSimple.Direction.FORWARD);
+        shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
         PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P,0,0,F);
-        shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
+        shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
+        shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         telemetry.addLine("Init Complete");
     }
     @Override
@@ -54,11 +58,15 @@ public class ShooterPIDFTuner extends OpMode {
                 P -= stepSizes[stepIndex];
             }
             PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P,0,0,F);
-            shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
+            shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
+            shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
 
-            shooter.setVelocity(TargetVelocity * TicksPerRev / 60);
+            shooter1.setVelocity(TargetVelocity * TicksPerRev / 60);
+            shooter2.setVelocity(TargetVelocity * TicksPerRev / 60);
 
-            double CurrentVelocity = (shooter.getVelocity() * 60 / TicksPerRev);
+            double Shooter1Vel = (shooter1.getVelocity() * 60 / TicksPerRev);
+            double Shooter2Vel = (shooter2.getVelocity() * 60 / TicksPerRev);
+            double CurrentVelocity = (Shooter1Vel + Shooter2Vel) / 2;
             double error = TargetVelocity - CurrentVelocity;
 
             telemetry.addData("Target Velocity", TargetVelocity);

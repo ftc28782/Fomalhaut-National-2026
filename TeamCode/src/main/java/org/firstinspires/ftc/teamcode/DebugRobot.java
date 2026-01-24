@@ -16,15 +16,15 @@ import org.firstinspires.ftc.teamcode.pedropathing.Constants;
 public class DebugRobot extends OpMode { //Simple robot for tests
 
     DcMotor intake, shooter1, shooter2 = null;
-    CRServo servo1, servo2 = null;
+    CRServo servo1 = null;
     Servo hoodservo = null;
     Follower follower;
     GamepadEx driver;
     SunriseRobot robot;
     private double Sinal = -1;
     private String SinalAtual = "-";
-    private double shooter_power = 0.3;
-    private double hood_position = 0;
+    private double shooter_power = 0.15;
+    private double hood_position = 0.48;
 
     @Override
     public void init(){
@@ -37,7 +37,6 @@ public class DebugRobot extends OpMode { //Simple robot for tests
         shooter1 = hardwareMap.get(DcMotor.class, "shooterMotor1");
         shooter2 = hardwareMap.get(DcMotor.class, "shooterMotor2");
         servo1 = hardwareMap.get(CRServo.class, "turretLeft");
-        servo2 = hardwareMap.get(CRServo.class, "turretRight");
         hoodservo = hardwareMap.get(Servo.class, "hoodServo");
 
     }
@@ -66,31 +65,27 @@ public class DebugRobot extends OpMode { //Simple robot for tests
         }
 
         if (gamepad1.yWasPressed()){ //Hood calibration
-            hood_position = hood_position + (Sinal * 0.05);
+            hood_position = hood_position + (Sinal * 0.01);
         }
         if (gamepad1.xWasPressed()) { //Shooter calibration
-            shooter_power = shooter_power + (Sinal * 0.05);
+            shooter_power = shooter_power + (Sinal * 0.01);
         }
 
         if (gamepad1.left_trigger > .1) { //Intake
-            intake.setPower(-1);
+            intake.setPower(1);
         } else {
             intake.setPower(0);
         }
 
         if (gamepad1.left_bumper) { //Rotate Turret to one direction
         servo1.setPower(1);
-        servo2.setPower(1);
         } else {
             servo1.setPower(0);
-            servo2.setPower(0);
         }
         if (gamepad1.right_bumper){ //Rotate Turret to other direction
         servo1.setPower(-1);
-        servo2.setPower(-1);
         } else {
             servo1.setPower(0);
-            servo2.setPower(0);
         }
 
         if (gamepad1.right_trigger > .1) { //Shooter
