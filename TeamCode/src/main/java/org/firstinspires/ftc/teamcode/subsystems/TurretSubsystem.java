@@ -25,8 +25,8 @@ public class TurretSubsystem extends SubsystemBase {
 //    private Alliance alliance = Alliance.BLUE;
 //
 //    // TODO: Fill goal coordinates
-//    private final double GOAL_BLUE_X = -58.346457, GOAL_BLUE_Y = -55.629921;
-//    private final double GOAL_RED_X = -58.346457, GOAL_RED_Y = 55.629921;
+//    private final double GOAL_BLUE_X = -63, GOAL_BLUE_Y = -64;
+//    private final double GOAL_RED_X = -63, GOAL_RED_Y = 64;
 //
 //    private final CRServo servoLeft, servoRight;
 //    private final DcMotorEx encoder;
@@ -54,7 +54,7 @@ public class TurretSubsystem extends SubsystemBase {
 //    private static final double TICKS_PER_DEGREE = (TICKS_PER_REV * GEAR_RATIO) / 360.0;
 //
 //    // TODO: Tune PIDF values
-//    public static double kV = 0.15;
+//    public static double kF = 0.15;
 //    public static double kP = 0.03;
 //    public static double kI = 0.0;
 //    public static double kD = 0.05;
@@ -75,7 +75,7 @@ public class TurretSubsystem extends SubsystemBase {
 //        // the turret encoder should increase when turning left
 //        // encoder.setDirection(DcMotorSimple.Direction.REVERSE);
 //
-//        controller = new PIDFController(kP, kI, kD, kV);
+//        controller = new PIDFController(kP, kI, kD, kF);
 //
 //        // Initialize Sensors
 //        limelightTurret = hardwareMap.get(Limelight3A.class, "limelightTurret");

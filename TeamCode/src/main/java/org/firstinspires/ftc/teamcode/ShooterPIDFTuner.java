@@ -13,7 +13,7 @@ public class ShooterPIDFTuner extends OpMode {
     public DcMotorEx shooter;
     public double FullSpeed = 312; //rpm
     public double HalfSpeed = 156; //rpm
-    public double TicksPerRev = 537.7;
+    public double TicksPerRev = 537.7; //TODO: Adapt RPM and TicksPerRev
     double TargetVelocity = FullSpeed;
     double F = 0;
     double P = 0;
