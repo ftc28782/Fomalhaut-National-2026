@@ -10,6 +10,7 @@ import com.seattlesolvers.solverslib.util.TelemetryData;
 import org.firstinspires.ftc.teamcode.commands.ManualTurretCommand;
 import org.firstinspires.ftc.teamcode.commands.ToggleTurretAimingModeCommand;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
+import org.firstinspires.ftc.teamcode.subsystems.TurretSubsystem;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp
 public class NoPinpoint extends CommandOpMode {
@@ -42,13 +43,13 @@ public class NoPinpoint extends CommandOpMode {
         initialize();
 
         while (!isStarted() && !isStopRequested()) {
-//            if (gamepad1.x) {
-//                robot.turretSubsystem.setAlliance(TurretSubsystem.Alliance.BLUE);
-//            }
-//            if (gamepad1.b) {
-//                robot.turretSubsystem.setAlliance(TurretSubsystem.Alliance.RED);
-//            }
-//            telemetryData.addData("Alliance", robot.turretSubsystem.getAlliance());
+            if (gamepad1.x) {
+                robot.turretSubsystem.setAlliance(TurretSubsystem.Alliance.BLUE);
+            }
+            if (gamepad1.b) {
+                robot.turretSubsystem.setAlliance(TurretSubsystem.Alliance.RED);
+            }
+            telemetryData.addData("Alliance", robot.turretSubsystem.getAlliance());
             telemetryData.addData("Status", "Inicializado. Aperte X/Triangulo para AZUL, B/Circulo para VERMELHO.");
             telemetryData.update();
         }
