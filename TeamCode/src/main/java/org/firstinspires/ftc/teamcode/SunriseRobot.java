@@ -4,11 +4,13 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.Robot;
 
 import org.firstinspires.ftc.teamcode.subsystems.FlywheelSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.TurretSubsystem;
 
 public class SunriseRobot extends Robot {
 
     public TurretSubsystem turretSubsystem;
+    public IntakeSubsystem intakeSubsystem;
     public FlywheelSubsystem flywheelSubsystem;
     public HardwareMap hwMap;
 
@@ -20,6 +22,7 @@ public class SunriseRobot extends Robot {
     public SunriseRobot(OpModeType type, HardwareMap hardwareMap) {
         this.hwMap = hardwareMap;
         turretSubsystem = new TurretSubsystem(hwMap);
+        intakeSubsystem = new IntakeSubsystem(hwMap);
         flywheelSubsystem = new FlywheelSubsystem(hwMap);
         if (type == OpModeType.TELEOP) {
             initTeleOp();

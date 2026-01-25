@@ -7,10 +7,10 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
+import org.firstinspires.ftc.teamcode.commands.IntakePullCommand;
 import org.firstinspires.ftc.teamcode.commands.ManualTurretCommand;
 import org.firstinspires.ftc.teamcode.commands.ShootCommand;
 import org.firstinspires.ftc.teamcode.commands.ToggleTurretAimingModeCommand;
-import org.firstinspires.ftc.teamcode.pedropathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.TurretSubsystem;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp
@@ -39,6 +39,7 @@ public class NoPinpoint extends CommandOpMode {
             .whenPressed(new ToggleTurretAimingModeCommand(robot.turretSubsystem));
 
         operator.getGamepadButton(GamepadKeys.Button.B).whileHeld(new ShootCommand(robot.flywheelSubsystem));
+        operator.getGamepadButton(GamepadKeys.Button.X).whileHeld(new IntakePullCommand(robot.intakeSubsystem));
     }
 
     @Override
