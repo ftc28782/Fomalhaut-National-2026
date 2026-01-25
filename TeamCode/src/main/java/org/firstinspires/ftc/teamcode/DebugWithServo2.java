@@ -12,11 +12,11 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
 
 
-@TeleOp (name = "DebugRobot")
-public class DebugRobot extends OpMode { //Simple robot for tests
+@TeleOp (name = "DebugWithServo2")
+public class DebugWithServo2 extends OpMode { //Simple robot for tests
 
     DcMotor intake, shooter1, shooter2 = null;
-    CRServo servo2 = null;
+    CRServo servo1, servo2 = null;
     Servo hoodservo = null;
     Follower follower;
     GamepadEx driver;
@@ -24,7 +24,7 @@ public class DebugRobot extends OpMode { //Simple robot for tests
     private double Sinal = -1;
     private String SinalAtual = "-";
     private double shooter_power = 1;
-    private double hood_position = 0.48;
+    private double hood_position = 0.42;
 
     @Override
     public void init(){
@@ -36,6 +36,7 @@ public class DebugRobot extends OpMode { //Simple robot for tests
         intake = hardwareMap.get(DcMotor.class, "intake");
         shooter1 = hardwareMap.get(DcMotor.class, "shooterMotor1");
         shooter2 = hardwareMap.get(DcMotor.class, "shooterMotor2");
+        servo1 = hardwareMap.get(CRServo.class, "turretLeft");
         servo2 = hardwareMap.get(CRServo.class, "turretRight");
         hoodservo = hardwareMap.get(Servo.class, "hoodServo");
 
@@ -77,16 +78,16 @@ public class DebugRobot extends OpMode { //Simple robot for tests
             intake.setPower(0);
         }
 
-        double turretPower = 0;
-
-        if (gamepad1.left_bumper) {
-            turretPower = 1;
-        } else if (gamepad1.right_bumper) {
-            turretPower = -1;
+        if (gamepad1.left_bumper) { //Rotate Turret to one direction
+            servo1.setPower(1);
+        } else {
+            servo1.setPower(0);
         }
-
-        servo2.setPower(turretPower);
-
+        if (gamepad1.right_bumper){ //Rotate Turret to other direction
+            servo1.setPower(-1);
+        } else {
+            servo1.setPower(0);
+        }
 
         if (gamepad1.right_trigger > .1) { //Shooter
             shooter1.setPower(shooter_power);
@@ -95,6 +96,7 @@ public class DebugRobot extends OpMode { //Simple robot for tests
             shooter1.setPower(0);
             shooter2.setPower(0);
         }
+
         hoodservo.setPosition(hood_position); //Set Hood position
     }
 }

@@ -11,9 +11,9 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 public class ShooterPIDFTuner extends OpMode {
 
     public DcMotorEx shooter1,shooter2;
-    public double FullSpeed = 4000; //rpm
-    public double HalfSpeed = 2000; //rpm
-    public double TicksPerRev = 42; //TODO: Adapt RPM and TicksPerRev
+    public double FullSpeed = 6000; //rpm
+    public double HalfSpeed = 3000; //rpm
+    public double TicksPerRev = 28; //TODO: Adapt RPM and TicksPerRev
     double TargetVelocity = FullSpeed;
     double F = 0;
     double P = 0;
