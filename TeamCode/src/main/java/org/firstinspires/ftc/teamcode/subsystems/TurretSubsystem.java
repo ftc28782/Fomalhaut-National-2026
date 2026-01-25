@@ -33,7 +33,7 @@ public class TurretSubsystem extends SubsystemBase {
 
     // Sensors
     private final Limelight3A limelightTurret;
-    private final Limelight3A limelightChassis;
+//    private final Limelight3A limelightChassis;
 //    private final GoBildaPinpointDriver pinpoint;
 
     // Aiming State
@@ -70,7 +70,7 @@ public class TurretSubsystem extends SubsystemBase {
 
         encoder = hardwareMap.get(DcMotorEx.class, "turretEncoder");
         encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        encoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // the turret encoder should increase when turning left
         // encoder.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -78,13 +78,13 @@ public class TurretSubsystem extends SubsystemBase {
 
         // Initialize Sensors
         limelightTurret = hardwareMap.get(Limelight3A.class, "limelightTurret");
-        limelightChassis = hardwareMap.get(Limelight3A.class, "limelightChassis");
+//        limelightChassis = hardwareMap.get(Limelight3A.class, "limelightChassis");
 
         limelightTurret.pipelineSwitch(0); // Assuming 0 is AprilTag
-        limelightChassis.pipelineSwitch(0);
+//        limelightChassis.pipelineSwitch(0);
 
         limelightTurret.start();
-        limelightChassis.start();
+//        limelightChassis.start();
 
 //        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
 //        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
@@ -106,9 +106,7 @@ public class TurretSubsystem extends SubsystemBase {
                 LLResult result = limelightTurret.getLatestResult();
                 if (result != null && result.isValid()) {
                     double tx = result.getTx();
-                    // Simple alignment: turn based on TX
-                    // Target is current pos + tx
-                    setTargetPosition(getPositionDegrees() + tx);
+                    setPower(tx * -0.1);
                 }
                 break;
             case ROBOT_POSE:
@@ -136,15 +134,15 @@ public class TurretSubsystem extends SubsystemBase {
         int visionCount = 0;
 
         // 1. Chassis Limelight
-        LLResult resultChassis = limelightChassis.getLatestResult();
-        if (resultChassis != null && resultChassis.isValid()) {
-             Pose3D botPose3D = resultChassis.getBotpose();
-             if (botPose3D != null) {
-                 visionXSum += botPose3D.getPosition().x * 39.3701; // Meters to Inches
-                 visionYSum += botPose3D.getPosition().y * 39.3701;
-                 visionCount++;
-             }
-        }
+//        LLResult resultChassis = limelightChassis.getLatestResult();
+//        if (resultChassis != null && resultChassis.isValid()) {
+//             Pose3D botPose3D = resultChassis.getBotpose();
+//             if (botPose3D != null) {
+//                 visionXSum += botPose3D.getPosition().x * 39.3701; // Meters to Inches
+//                 visionYSum += botPose3D.getPosition().y * 39.3701;
+//                 visionCount++;
+//             }
+//        }
 
         // 2. Turret Limelight (Corrected)
         LLResult resultTurret = limelightTurret.getLatestResult();
@@ -158,7 +156,7 @@ public class TurretSubsystem extends SubsystemBase {
 
                  // Correct for Turret Camera Offset (Back-calculate Robot Center)
                  // TODO: Measure exact radius from turret center to camera lens
-                 double turretRadius = 6.0; // Estimate: 6 inches
+                 double turretRadius = 7.0; // Estimate: 6 inches
 
                  // Calculate Robot Center based on Camera Field Pose and Camera Field Heading
                  // We assume camera is mounted facing 'forward' on the turret

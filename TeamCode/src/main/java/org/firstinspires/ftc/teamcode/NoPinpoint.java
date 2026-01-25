@@ -63,9 +63,9 @@ public class NoPinpoint extends CommandOpMode {
     public void run() {
         super.run();
 
-        telemetryData.addData("X", follower.getPose().getX());
-        telemetryData.addData("Y", follower.getPose().getY());
-        telemetryData.addData("Heading", follower.getPose().getHeading());
+//        telemetryData.addData("X", follower.getPose().getX());
+//        telemetryData.addData("Y", follower.getPose().getY());
+//        telemetryData.addData("Heading", follower.getPose().getHeading());
 
         // Turret Telemetry
         telemetryData.addData("Turret Mode", robot.turretSubsystem.getAimingMode());
