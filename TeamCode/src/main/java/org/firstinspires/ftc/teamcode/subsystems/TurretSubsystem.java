@@ -61,6 +61,7 @@ public class TurretSubsystem extends SubsystemBase {
     private boolean isManual = true;
     private double targetDegrees = 0.0;
 
+
     public TurretSubsystem(HardwareMap hardwareMap) {
         // Initialize servos
         servo1 = hardwareMap.get(CRServo.class, "turretLeft");
