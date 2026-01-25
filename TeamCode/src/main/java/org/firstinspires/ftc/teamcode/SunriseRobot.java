@@ -17,7 +17,7 @@ public class SunriseRobot extends Robot {
     // the constructor with a specified opmode type
     public SunriseRobot(OpModeType type, HardwareMap hardwareMap) {
         this.hwMap = hardwareMap;
-//        turretSubsystem = new TurretSubsystem(hwMap);
+        turretSubsystem = new TurretSubsystem(hwMap);
         if (type == OpModeType.TELEOP) {
             initTeleOp();
         } else {

@@ -18,7 +18,7 @@ public class TeleOp extends CommandOpMode {
     TelemetryData telemetryData = new TelemetryData(telemetry);
 
     GamepadEx driver;
-//    GamepadEx operator;
+    GamepadEx operator;
     SunriseRobot robot;
 
     @Override
@@ -28,17 +28,17 @@ public class TeleOp extends CommandOpMode {
         super.reset();
 
         robot = new SunriseRobot(SunriseRobot.OpModeType.TELEOP, hardwareMap);
-//        operator = new GamepadEx(gamepad2);
+        operator = new GamepadEx(gamepad2);
 
         follower.startTeleopDrive();
 
         // Turret Controls
-//        robot.turretSubsystem.setDefaultCommand(
-//            new ManualTurretCommand(robot.turretSubsystem, () -> operator.getRightX())
-//        );
+        robot.turretSubsystem.setDefaultCommand(
+            new ManualTurretCommand(robot.turretSubsystem, () -> operator.getRightX())
+        );
 
-//        operator.getGamepadButton(GamepadKeys.Button.A)
-//            .whenPressed(new ToggleTurretAimingModeCommand(robot.turretSubsystem));
+        operator.getGamepadButton(GamepadKeys.Button.A)
+            .whenPressed(new ToggleTurretAimingModeCommand(robot.turretSubsystem));
     }
 
     @Override
@@ -71,12 +71,12 @@ public class TeleOp extends CommandOpMode {
         telemetryData.addData("Heading", follower.getPose().getHeading());
 
         // Turret Telemetry
-//        telemetryData.addData("Turret Mode", robot.turretSubsystem.getAimingMode());
-//        telemetryData.addData("Turret Angle", robot.turretSubsystem.getPositionDegrees());
-//        telemetryData.addData("Turret Target", robot.turretSubsystem.getTargetDegrees());
-//        telemetryData.addData("Turret Target Visible", robot.turretSubsystem.isTargetVisible());
-//        telemetryData.addData("Robot Pose (Turret Est.) X", robot.turretSubsystem.getCurrentRobotPose().getX(org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.INCH));
-//        telemetryData.addData("Robot Pose (Turret Est.) Y", robot.turretSubsystem.getCurrentRobotPose().getY(org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.INCH));
+        telemetryData.addData("Turret Mode", robot.turretSubsystem.getAimingMode());
+        telemetryData.addData("Turret Angle", robot.turretSubsystem.getPositionDegrees());
+        telemetryData.addData("Turret Target", robot.turretSubsystem.getTargetDegrees());
+        telemetryData.addData("Turret Target Visible", robot.turretSubsystem.isTargetVisible());
+        telemetryData.addData("Robot Pose (Turret Est.) X", robot.turretSubsystem.getCurrentRobotPose().getX(org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.INCH));
+        telemetryData.addData("Robot Pose (Turret Est.) Y", robot.turretSubsystem.getCurrentRobotPose().getY(org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.INCH));
 
         telemetryData.update();
 
