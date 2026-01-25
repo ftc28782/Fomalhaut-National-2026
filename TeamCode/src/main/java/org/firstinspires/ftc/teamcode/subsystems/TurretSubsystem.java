@@ -34,7 +34,7 @@ public class TurretSubsystem extends SubsystemBase {
     // Sensors
     private final Limelight3A limelightTurret;
     private final Limelight3A limelightChassis;
-    private final GoBildaPinpointDriver pinpoint;
+//    private final GoBildaPinpointDriver pinpoint;
 
     // Aiming State
     public enum AimingMode {
@@ -86,10 +86,10 @@ public class TurretSubsystem extends SubsystemBase {
         limelightTurret.start();
         limelightChassis.start();
 
-        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
-        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
-        pinpoint.resetPosAndIMU();
+//        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
+//        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+//        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+//        pinpoint.resetPosAndIMU();
     }
 
     @Override
@@ -124,12 +124,12 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     private void updatePoseEstimation() {
-        pinpoint.update();
-        Pose2D odoPose = pinpoint.getPosition(); // Current belief of position
+//        pinpoint.update();
+//        Pose2D odoPose = pinpoint.getPosition(); // Current belief of position
 
-        double fusedX = odoPose.getX(DistanceUnit.INCH);
-        double fusedY = odoPose.getY(DistanceUnit.INCH);
-        double fusedH = odoPose.getHeading(AngleUnit.DEGREES);
+//        double fusedX = odoPose.getX(DistanceUnit.INCH);
+//        double fusedY = odoPose.getY(DistanceUnit.INCH);
+//        double fusedH = odoPose.getHeading(AngleUnit.DEGREES);
 
         double visionXSum = 0;
         double visionYSum = 0;
@@ -177,24 +177,24 @@ public class TurretSubsystem extends SubsystemBase {
             double visionY = visionYSum / visionCount;
 
             // Calculate distance between current odometry and vision to detect "jumps"
-            double dist = Math.hypot(visionX - fusedX, visionY - fusedY);
+//            double dist = Math.hypot(visionX - fusedX, visionY - fusedY);
 
             // ALPHA FILTER:
             // If the difference is huge (start of match or lost tracking), trust vision more.
             // If merely drifting, correct slowly.
-            double alpha = (dist > 10.0) ? 0.5 : 0.05 * visionCount; // More sensors = slightly more trust
+//            double alpha = (dist > 10.0) ? 0.5 : 0.05 * visionCount; // More sensors = slightly more trust
 
-            fusedX = (1 - alpha) * fusedX + alpha * visionX;
-            fusedY = (1 - alpha) * fusedY + alpha * visionY;
+//            fusedX = (1 - alpha) * fusedX + alpha * visionX;
+//            fusedY = (1 - alpha) * fusedY + alpha * visionY;
 
             // IMPORTANT: Write the corrected pose back to the Pinpoint hardware
             // This ensures that when vision is lost, odometry continues from the CORRECTED spot.
-            Pose2D correctedPose = new Pose2D(DistanceUnit.INCH, fusedX, fusedY, AngleUnit.DEGREES, fusedH);
-            pinpoint.setPosition(correctedPose);
+//            Pose2D correctedPose = new Pose2D(DistanceUnit.INCH, fusedX, fusedY, AngleUnit.DEGREES, fusedH);
+//            pinpoint.setPosition(correctedPose);
         }
 
         // Update our subsystem state
-        currentRobotPose = new Pose2D(DistanceUnit.INCH, fusedX, fusedY, AngleUnit.DEGREES, fusedH);
+//        currentRobotPose = new Pose2D(DistanceUnit.INCH, fusedX, fusedY, AngleUnit.DEGREES, fusedH);
     }
 
     public void setAimingMode(AimingMode mode) {
