@@ -36,7 +36,7 @@ public class DebugRobot extends OpMode { //Simple robot for tests
         intake = hardwareMap.get(DcMotor.class, "intake");
         shooter1 = hardwareMap.get(DcMotor.class, "shooterMotor1");
         shooter2 = hardwareMap.get(DcMotor.class, "shooterMotor2");
-        servo2 = hardwareMap.get(CRServo.class, "turretRight");
+        servo2 = hardwareMap.get(CRServo.class, "turretLeft");
         hoodservo = hardwareMap.get(Servo.class, "hoodServo");
 
     }
