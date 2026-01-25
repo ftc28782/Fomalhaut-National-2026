@@ -8,6 +8,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.commands.ManualTurretCommand;
+import org.firstinspires.ftc.teamcode.commands.ShootCommand;
 import org.firstinspires.ftc.teamcode.commands.ToggleTurretAimingModeCommand;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.TurretSubsystem;
@@ -39,6 +40,8 @@ public class TeleOp extends CommandOpMode {
 
         operator.getGamepadButton(GamepadKeys.Button.A)
             .whenPressed(new ToggleTurretAimingModeCommand(robot.turretSubsystem));
+
+        operator.getGamepadButton(GamepadKeys.Button.B).whileHeld(new ShootCommand(robot.flywheelSubsystem));
     }
 
     @Override

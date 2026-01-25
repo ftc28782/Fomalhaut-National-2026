@@ -3,11 +3,13 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.Robot;
 
+import org.firstinspires.ftc.teamcode.subsystems.FlywheelSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.TurretSubsystem;
 
 public class SunriseRobot extends Robot {
 
     public TurretSubsystem turretSubsystem;
+    public FlywheelSubsystem flywheelSubsystem;
     public HardwareMap hwMap;
 
     public enum OpModeType {
@@ -18,6 +20,7 @@ public class SunriseRobot extends Robot {
     public SunriseRobot(OpModeType type, HardwareMap hardwareMap) {
         this.hwMap = hardwareMap;
         turretSubsystem = new TurretSubsystem(hwMap);
+        flywheelSubsystem = new FlywheelSubsystem(hwMap);
         if (type == OpModeType.TELEOP) {
             initTeleOp();
         } else {
