@@ -35,7 +35,7 @@ public class DebugRobot extends OpMode { //Simple robot for tests
     public double TargetVelocity = 3500; //rpm
     public double TicksPerRev = 28;
     Limelight3A limelightTurret;
-    DcMotor intake= null;
+    DcMotor intake = null;
     DcMotorEx shooter1, shooter2;
     CRServo servo2 = null;
     Servo hoodservo = null;
@@ -69,11 +69,14 @@ public class DebugRobot extends OpMode { //Simple robot for tests
         driver = new GamepadEx(gamepad1);
         follower = Constants.createFollower(hardwareMap);
         follower.setPose(new Pose(0,0,0));
+        newPose = new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0);
         robot = new SunriseRobot(SunriseRobot.OpModeType.TELEOP, hardwareMap);
         follower.startTeleopDrive();
 
         limelightTurret = hardwareMap.get(Limelight3A.class, "limelightTurret");
+        limelightTurret.pipelineSwitch(0);
         limelightTurret.start();
+
 
         encoder = hardwareMap.get(DcMotorEx.class, "turretEncoder");
         encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -99,8 +102,7 @@ public class DebugRobot extends OpMode { //Simple robot for tests
 
         follower.update();
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
-        pinpointPose = follower.getPose();
-        newPose = PoseConverter.poseToPose2D(pinpointPose, InvertedFTCCoordinates.INSTANCE);
+        newPose = PoseConverter.poseToPose2D(follower.getPose(), InvertedFTCCoordinates.INSTANCE);
 
 //        turretAngle = encoder.getCurrentPosition() / TICKS_PER_DEGREE;
 turretAngle = newPose.getHeading(AngleUnit.DEGREES);
