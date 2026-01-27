@@ -117,6 +117,7 @@ public class DebugLLChassis extends OpMode {
         telemetry.addData("FusedX", fusedX);
         telemetry.addData("FusedY", fusedY);
         telemetry.addData("Distance", distance);
+        telemetry.addData("Servo Position", servoAngle);
         telemetry.update();
     }
 }
