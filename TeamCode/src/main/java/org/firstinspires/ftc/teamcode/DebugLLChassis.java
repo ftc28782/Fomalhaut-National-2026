@@ -1,19 +1,15 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.pedropathing.follower.Follower;
-import com.pedropathing.ftc.InvertedFTCCoordinates;
-import com.pedropathing.ftc.PoseConverter;
 import com.pedropathing.geometry.Pose;
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
 
@@ -27,15 +23,22 @@ public class DebugLLChassis extends OpMode {
     double alphaXY = 0.25;
     GamepadEx driver;
     SunriseRobot robot;
+    Servo servo2 = null;
     private final double GOAL_BLUE_X = -58.346457, GOAL_BLUE_Y = -55.629921;
+    private double servoAngle = 0.5;
+    private ElapsedTime timer;
     Limelight3A limelightChassis;
     public void init() {
+        //SERVO
+        servo2 = hardwareMap.get(Servo.class, "turretLeft");
+        timer = new ElapsedTime();
+
         //PINPOINT
         follower = Constants.createFollower(hardwareMap);
         follower.setPose(new Pose(0,0,0));
         robot = new SunriseRobot(SunriseRobot.OpModeType.TELEOP, hardwareMap);
 
-        //TELEOP\\\\
+        //TELEOP
         driver = new GamepadEx(gamepad1);
         follower.startTeleopDrive();
 
@@ -74,7 +77,8 @@ public class DebugLLChassis extends OpMode {
             }
         }
 
-        //ALPLHA FILTER
+        //ALPLHA FILTER & DISTANCE
+
         double fusedX = odoX;
         double fusedY = odoY;
 
@@ -88,6 +92,22 @@ public class DebugLLChassis extends OpMode {
         double dy = GOAL_BLUE_Y - fusedY;
 
         double distance = Math.hypot(dx, dy);
+
+        //SERVO POSISTION
+
+         if (gamepad1.left_bumper && timer.milliseconds() > 100) {
+             servoAngle = servoAngle + 0.01;
+             timer.reset();
+         }
+
+         if (gamepad1.right_bumper && timer.milliseconds() > 100) {
+             servoAngle = servoAngle - 0.01;
+             timer.reset();
+         }
+
+         //COLCOCAR COM BASE NISSO UMA EQUACAO LINEAR, ONDE EM UMA POSICAO VAI SER 0 GRAUS (RETO),
+        // OUTRA POSICAO É 90°, OUTRA -90°, ETC.... USANDO MYGRAPHFIT. COM ISSO VAI DAR PARA FAZER O YAW NA LIMELIGHT DA TURRET, POIS VAMOS TER O ANGULO
+        servo2.setPosition(servoAngle);
 
         telemetry.addData("X LL", camX);
         telemetry.addData("Y LL", camY);
