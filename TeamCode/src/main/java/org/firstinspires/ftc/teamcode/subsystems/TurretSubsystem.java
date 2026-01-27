@@ -27,8 +27,8 @@ public class TurretSubsystem extends SubsystemBase {
     private final double GOAL_BLUE_X = -63, GOAL_BLUE_Y = -64;
     private final double GOAL_RED_X = -63, GOAL_RED_Y = 64;
 
-    private final CRServo servo1/*, servoRight*/;
-    private final DcMotorEx encoder;
+//    private final CRServo servo1/*, servoRight*/;
+//    private final DcMotorEx encoder;
     private final PIDFController controller;
 
     // Sensors
@@ -64,14 +64,14 @@ public class TurretSubsystem extends SubsystemBase {
 
     public TurretSubsystem(HardwareMap hardwareMap) {
         // Initialize servos
-        servo1 = hardwareMap.get(CRServo.class, "turretLeft");
+//        servo1 = hardwareMap.get(CRServo.class, "turretLeft");
 //        servoRight = hardwareMap.get(CRServo.class, "turretRight");
 
 //        servoRight.setDirection(CRServo.Direction.REVERSE);
 
-        encoder = hardwareMap.get(DcMotorEx.class, "turretEncoder");
-        encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        encoder = hardwareMap.get(DcMotorEx.class, "turretEncoder");
+//        encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // the turret encoder should increase when turning left
         // encoder.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -116,9 +116,9 @@ public class TurretSubsystem extends SubsystemBase {
         }
 
         if (aimingMode != AimingMode.MANUAL) { // If automating, update PID
-            double currentDegrees = getPositionDegrees();
-            double power = controller.calculate(currentDegrees, targetDegrees);
-             setPower(power);
+//            double currentDegrees = getPositionDegrees();
+//            double power = controller.calculate(currentDegrees, targetDegrees);
+//             setPower(power);
         }
     }
 
@@ -218,21 +218,21 @@ public class TurretSubsystem extends SubsystemBase {
         }
     }
 
-    public double getPositionDegrees() {
-        return encoder.getCurrentPosition() / TICKS_PER_DEGREE;
-    }
+//    public double getPositionDegrees() {
+//        return encoder.getCurrentPosition() / TICKS_PER_DEGREE;
+//    }
 
     private static final double MAX_DEGREES = 177.0;
     private static final double MIN_DEGREES = -177.0;
 
     private void setPower(double power) {
-        double currentPos = getPositionDegrees();
+//        double currentPos = getPositionDegrees();
         // Soft Stops
-        if (currentPos > MAX_DEGREES && power > 0) power = 0;
-        if (currentPos < MIN_DEGREES && power < 0) power = 0;
+//        if (currentPos > MAX_DEGREES && power > 0) power = 0;
+//        if (currentPos < MIN_DEGREES && power < 0) power = 0;
 
         power = Range.clip(power, -1.0, 1.0);
-        servo1.setPower(power);
+//        servo1.setPower(power);
 //        servoRight.setPower(power);
     }
 

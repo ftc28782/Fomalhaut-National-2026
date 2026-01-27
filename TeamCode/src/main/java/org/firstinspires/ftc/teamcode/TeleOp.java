@@ -76,14 +76,11 @@ public class TeleOp extends CommandOpMode {
 
         // Turret Telemetry
         telemetryData.addData("Turret Mode", robot.turretSubsystem.getAimingMode());
-        telemetryData.addData("Turret Angle", robot.turretSubsystem.getPositionDegrees());
+//        telemetryData.addData("Turret Angle", robot.turretSubsystem.getPositionDegrees());
         telemetryData.addData("Turret Target", robot.turretSubsystem.getTargetDegrees());
         telemetryData.addData("Turret Target Visible", robot.turretSubsystem.isTargetVisible());
         telemetryData.addData("Robot Pose (Turret Est.) X", robot.turretSubsystem.getCurrentRobotPose().getX(org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.INCH));
         telemetryData.addData("Robot Pose (Turret Est.) Y", robot.turretSubsystem.getCurrentRobotPose().getY(org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.INCH));
-
         telemetryData.update();
-
-
     }
 }

@@ -55,7 +55,7 @@ public class DebugRobot extends OpMode { //Simple robot for tests
     private final double GEAR_RATIO = 3.4;
     private final double TICKS_PER_DEGREE = (TICKS_PER_REV * GEAR_RATIO) / 360.0;
     private double turretAngle;
-    private DcMotorEx encoder;
+//    private DcMotorEx encoder;
     private boolean hasVision;
     private CRServo transferServo;
     private double transferPower;
@@ -71,14 +71,14 @@ public class DebugRobot extends OpMode { //Simple robot for tests
 
         //MOTORS & SERVOS
 
-        encoder = hardwareMap.get(DcMotorEx.class, "turretEncoder");
-        encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        encoder = hardwareMap.get(DcMotorEx.class, "turretEncoder");
+//        encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         intake = hardwareMap.get(DcMotor.class, "intake");
         shooter1 = hardwareMap.get(DcMotorEx.class, "shooterMotor1");
         shooter2 = hardwareMap.get(DcMotorEx.class, "shooterMotor2");
-        servo2 = hardwareMap.get(CRServo.class, "turretLeft");
-        transferServo = hardwareMap.get(CRServo.class, "transferServo");
+//        servo2 = hardwareMap.get(CRServo.class, "turretLeft");
+//        transferServo = hardwareMap.get(CRServo.class, "transferServo");
         hoodservo = hardwareMap.get(Servo.class, "hoodServo");
         shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -106,8 +106,6 @@ public class DebugRobot extends OpMode { //Simple robot for tests
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
 
         //PINPOINT
-
-        newPose = PoseConverter.poseToPose2D(follower.getPose(), InvertedFTCCoordinates.INSTANCE);
         turretAngle = newPose.getHeading(AngleUnit.DEGREES);
 
         //LIMELIGHT
@@ -132,20 +130,21 @@ public class DebugRobot extends OpMode { //Simple robot for tests
 
         //ALPHA FILTER & DISTANCE
 
-        double odoX = newPose.getX(DistanceUnit.INCH);
-        double odoY = newPose.getY(DistanceUnit.INCH);
+        Pose followerPose = follower.getPose();
+        double odoX = followerPose.getX();
+        double odoY = followerPose.getY();
         double odoH = newPose.getHeading(AngleUnit.DEGREES);
 
         double fusedX = odoX;
         double fusedY = odoY;
 
-        double errorVision = Math.hypot(robotX - odoX, robotY - odoY);
-        if (hasVision && errorVision > 1) {
-            fusedX = odoX * (1 - alphaXY) + robotX * alphaXY;
-            fusedY = odoY * (1 - alphaXY) + robotY * alphaXY;
-            fusedPose = new Pose2D(DistanceUnit.INCH, fusedX, fusedY, AngleUnit.DEGREES, odoH);
-            follower.setPose(new Pose(fusedX,fusedY,newPose.getHeading(AngleUnit.RADIANS)));
-        }
+//        double errorVision = Math.hypot(robotX - odoX, robotY - odoY);
+//        if (hasVision && errorVision > 1) {
+//            fusedX = odoX * (1 - alphaXY) + robotX * alphaXY;
+//            fusedY = odoY * (1 - alphaXY) + robotY * alphaXY;
+//            fusedPose = new Pose2D(DistanceUnit.INCH, fusedX, fusedY, AngleUnit.DEGREES, odoH);
+//            follower.setPose(new Pose(fusedX,fusedY,newPose.getHeading(AngleUnit.RADIANS)));
+//        }
         double dx = GOAL_BLUE_X - fusedX;
         double dy = GOAL_BLUE_Y - fusedY;
 
@@ -172,12 +171,14 @@ public class DebugRobot extends OpMode { //Simple robot for tests
             Sinal = Sinal * -1;
         }
 
-        if (gamepad1.yWasPressed()){ //Hood calibration
-            hood_position = hood_position + (Sinal * 0.04);
-        }
-        if (gamepad1.xWasPressed()) { //Shooter calibration
-            TargetVelocity = TargetVelocity + (Sinal * 150);
-        }
+        hood_position = -0.8909748 + 0.0521592 * distance - 0.0006677889 * Math.pow(distance, 2) + 0.000003639036 * Math.pow(distance, 3) - 7.141361e-9 * Math.pow(distance, 4);
+//        if (gamepad1.yWasPressed()){ //Hood calibration
+//            hood_position = hood_position + (Sinal * 0.04);
+//        }
+        TargetVelocity = 1856.632 + 12.22643 * distance - 0.005318002 * Math.pow(distance, 2);
+//        if (gamepad1.xWasPressed()) { //Shooter calibration
+//            TargetVelocity = TargetVelocity + (Sinal * 150);
+//        }
         if (gamepad1.dpadLeftWasPressed()) { //Intake calibration
             intake_power = intake_power + (Sinal * 0.05);
         }
@@ -196,15 +197,15 @@ public class DebugRobot extends OpMode { //Simple robot for tests
             intake.setPower(0);
         }
 
-        double turretPower = 0;
-
-        if (gamepad1.left_bumper) {
-            turretPower = 1;
-        } else if (gamepad1.right_bumper) {
-            turretPower = -1;
-        }
-
-        servo2.setPower(turretPower);
+//        double turretPower = 0;
+//
+//        if (gamepad1.left_bumper) {
+//            turretPower = 1;
+//        } else if (gamepad1.right_bumper) {
+//            turretPower = -1;
+//        }
+//
+//        servo2.setPower(turretPower);
 
         if (gamepad1.right_trigger > .1) { //Shooter
             shooter1.setVelocity(shooter_power);
@@ -228,7 +229,7 @@ public class DebugRobot extends OpMode { //Simple robot for tests
         telemetry.addData("X LL", camX);
         telemetry.addData("Y LL", camY);
         telemetry.addData("Heading", newPose.getHeading(AngleUnit.DEGREES));
-        telemetry.addData("Turret Angle", encoder.getCurrentPosition());
+//        telemetry.addData("Turret Angle", encoder.getCurrentPosition());
         telemetry.update();
     }
 }
