@@ -32,10 +32,12 @@ public class DebugLLChassis extends OpMode {
     SunriseRobot robot;
     Servo servo1 = null;
     private final double GOAL_BLUE_X = -58.346457, GOAL_BLUE_Y = -55.629921;
-    private double servoAngle = 0.5;
+    private double rightAngle = 0.55;
+    private double leftAngle = 0.52;
     private ElapsedTime timer;
     private double c = 0;
     Deadline IMUTimer;
+    Servo servo2 = null;
     private IMU imu;
     public void init() {
         //IMU
@@ -49,6 +51,7 @@ public class DebugLLChassis extends OpMode {
 
         //SERVO
         servo1 = hardwareMap.get(Servo.class, "turretLeft");
+        servo2 = hardwareMap.get(Servo.class, "rightTurret");
         timer = new ElapsedTime();
 
         //PINPOINT
@@ -120,19 +123,23 @@ public class DebugLLChassis extends OpMode {
 
         //SERVO POSISTION
 
-         if (gamepad1.left_bumper && timer.milliseconds() > 100) {
-             servoAngle = servoAngle + 0.01;
+         if (gamepad1.leftBumperWasPressed()) {
+             leftAngle = leftAngle + 0.01;
+             rightAngle = rightAngle + 0.01;
              timer.reset();
          }
 
-         if (gamepad1.right_bumper && timer.milliseconds() > 100) {
-             servoAngle = servoAngle - 0.01;
+         if (gamepad1.rightBumperWasPressed()) {
+             rightAngle = rightAngle - 0.01;
+             leftAngle = leftAngle - 0.01;
              timer.reset();
          }
+         double servoAngle = (rightAngle + leftAngle) /2;
 
          //COLCOCAR COM BASE NISSO UMA EQUACAO LINEAR, ONDE EM UMA POSICAO VAI SER 0 GRAUS (RETO),
         // OUTRA POSICAO É 90°, OUTRA -90°, ETC.... USANDO MYGRAPHFIT. COM ISSO VAI DAR PARA FAZER O YAW NA LIMELIGHT DA TURRET, POIS VAMOS TER O ANGULO
-        servo1.setPosition(servoAngle);
+        servo1.setPosition(leftAngle);
+        servo2.setPosition(rightAngle);
 
         telemetry.addData("X LL", camX);
         telemetry.addData("Y LL", camY);
