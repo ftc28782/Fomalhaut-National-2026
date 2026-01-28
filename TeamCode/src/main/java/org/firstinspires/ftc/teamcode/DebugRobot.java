@@ -34,7 +34,7 @@ public class DebugRobot extends OpMode { //Simple robot for tests
     public double TargetVelocity = 3500; //rpm
     public double TicksPerRev = 28;
     Limelight3A limelightTurret;
-    DcMotor intake = null;
+    DcMotorEx intake = null;
     DcMotorEx shooter1, shooter2;
     CRServo servo2 = null;
     Servo hoodservo = null;
@@ -42,7 +42,7 @@ public class DebugRobot extends OpMode { //Simple robot for tests
     SunriseRobot robot;
     private double Sinal = -1;
     private String SinalAtual = "-";
-    private double hood_position = 0.805;
+    private double hood_position = 0.585;
     private double intake_power = 1;
     private double camX = 0;
     private double camY = 0;
@@ -55,7 +55,6 @@ public class DebugRobot extends OpMode { //Simple robot for tests
     private final double GEAR_RATIO = 3.4;
     private final double TICKS_PER_DEGREE = (TICKS_PER_REV * GEAR_RATIO) / 360.0;
     private double turretAngle;
-//    private DcMotorEx encoder;
     private boolean hasVision;
     private CRServo transferServo;
     private double transferPower;
@@ -71,14 +70,13 @@ public class DebugRobot extends OpMode { //Simple robot for tests
 
         //MOTORS & SERVOS
 
-//        encoder = hardwareMap.get(DcMotorEx.class, "turretEncoder");
-//        encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        intake = hardwareMap.get(DcMotor.class, "intake");
-        shooter1 = hardwareMap.get(DcMotorEx.class, "shooterMotor1");
-        shooter2 = hardwareMap.get(DcMotorEx.class, "shooterMotor2");
+        intake = hardwareMap.get(DcMotorEx.class, "intake");
+        intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 //        servo2 = hardwareMap.get(CRServo.class, "turretLeft");
 //        transferServo = hardwareMap.get(CRServo.class, "transferServo");
+        shooter1 = hardwareMap.get(DcMotorEx.class, "shooterMotor1");
+        shooter2 = hardwareMap.get(DcMotorEx.class, "shooterMotor2");
         hoodservo = hardwareMap.get(Servo.class, "hoodServo");
         shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -105,8 +103,11 @@ public class DebugRobot extends OpMode { //Simple robot for tests
         follower.update();
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
 
+        //THROUGHBORE ENCODER
+
+        turretAngle = intake.getCurrentPosition() / TICKS_PER_DEGREE;
+
         //PINPOINT
-        turretAngle = newPose.getHeading(AngleUnit.DEGREES);
 
         //LIMELIGHT
 
@@ -229,7 +230,7 @@ public class DebugRobot extends OpMode { //Simple robot for tests
         telemetry.addData("X LL", camX);
         telemetry.addData("Y LL", camY);
         telemetry.addData("Heading", newPose.getHeading(AngleUnit.DEGREES));
-//        telemetry.addData("Turret Angle", encoder.getCurrentPosition());
+        telemetry.addData("Turret Angle", intake.getCurrentPosition());
         telemetry.update();
     }
 }
