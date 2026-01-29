@@ -49,9 +49,11 @@ public class DebugLLChassis extends OpMode {
     private double encoder;
     private double IMUDegress;
     PIDController turretPID;
-    private double P, D;
-
+    private double P = 0.014;
+    private double D = 0.0015;
+    public int stepIndex = 1;
     private IMU imu;
+
     public void init() {
 
         //TURRET PID
@@ -115,7 +117,7 @@ public class DebugLLChassis extends OpMode {
         }
         IMUDegress = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         follower.update();
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
+        follower.setTeleOpDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
 
         // PINPOINT
         Pose followerPose = follower.getPose();
@@ -158,20 +160,20 @@ public class DebugLLChassis extends OpMode {
         double distance = Math.hypot(dx, dy);
 
         //TURRET SERVOS
-        double angleToGoal =  AngleUnit.normalizeDegrees((Math.toDegrees(Math.atan2(dy, dx))) - IMUDegress - turretAngle);
-        double turretError = AngleUnit.normalizeDegrees(angleToGoal);
-        double servoPower = turretPID.calculate(turretError);
-        servoPower = Math.max(-1, Math.min(1, servoPower));
+        double chassisTurn = gamepad1.right_stick_x;
+
+        double angleToGoal = AngleUnit.normalizeDegrees(Math.toDegrees(Math.atan2(dy, dx)) - IMUDegress - turretAngle);
+        if (Math.abs(angleToGoal) < 0.4) {
+            angleToGoal = 0;
+        }
+        double servoPower = -turretPID.calculate(angleToGoal) + (chassisTurn * 1);
 
         if (turretAngle > 115 && servoPower > 0) servoPower = 0;
         if (turretAngle < -115 && servoPower < 0) servoPower = 0;
-
-        if (Math.abs(turretError) < 0.4) {
-            servoPower = 0;
-        }
+        servo1.setPower(servoPower);
+        servo2.setPower(servoPower);
 
         //PIDF CALIBRATOR
-        int stepIndex = 1;
         double[] stepSizes = {10,1,0.1,0.01,0.001,0.0001};
         if (gamepad1.bWasPressed()) {
             stepIndex = (stepIndex + 1) % stepSizes.length;
@@ -190,8 +192,7 @@ public class DebugLLChassis extends OpMode {
             P -= stepSizes[stepIndex];
         }
 
-        servo1.setPower(servoPower);
-        servo2.setPower(servoPower);
+        turretPID.setPID(P, 0, D);
 
         //SHOOTER AND HOOD POSITION
         hood_position = -0.8909748 + 0.0521592 * distance - 0.0006677889 * Math.pow(distance, 2) + 0.000003639036 * Math.pow(distance, 3) - 7.141361e-9 * Math.pow(distance, 4);
@@ -200,7 +201,15 @@ public class DebugLLChassis extends OpMode {
         double shooter_power = (TargetVelocity * TicksPerRev / 60);
         TargetVelocity = 1746.163 + 12.32215 * distance - 0.005318002 * Math.pow(distance, 2);
 
-        if (gamepad1.left_trigger > .1) { //Intake
+        double Shooter1Vel = (shooter1.getVelocity() * 60 / TicksPerRev);
+        double Shooter2Vel = (shooter2.getVelocity() * 60 / TicksPerRev);
+        double CurrentVelocity = (Shooter1Vel + Shooter2Vel) / 2;
+        double error = TargetVelocity - CurrentVelocity;
+
+        boolean intakeByTrigger = gamepad1.left_trigger > 0.1;
+        boolean intakeByA = gamepad1.a && Math.abs(error) < 100;
+
+        if (intakeByTrigger || intakeByA) {
             intake.setPower(1);
         } else {
             intake.setPower(0);
