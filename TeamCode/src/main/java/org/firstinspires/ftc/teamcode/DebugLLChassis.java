@@ -29,36 +29,35 @@ public class DebugLLChassis extends OpMode {
 
     private boolean hasVision;
     Limelight3A limelightChassis;
-    public double TargetVelocity = 3500; //rpm
+    public double TargetVelocity = 3500;
     public double TicksPerRev = 28;
-    private double camX = 0;
-    private double camY = 0;
+    private double camX;
+    private double camY;
     Follower follower;
-
     double alphaXY = 0.2;
     private double hood_position = 0.585;
     GamepadEx driver;
     SunriseRobot robot;
     CRServo servo1, servo2 = null;
-    private final double GOAL_BLUE_X = -63, GOAL_BLUE_Y = -64;
+    DcMotorEx shooter1, shooter2, intake= null;
+    Servo hoodservo = null;
     private double servoPower = 0;
+    private final double GOAL_BLUE_X = -63, GOAL_BLUE_Y = -64;
     private double c = 0;
     Deadline IMUTimer;
-    DcMotorEx intake = null;
     private double turretAngle;
     private double encoder;
-    DcMotorEx shooter1, shooter2 = null;
-    Servo hoodservo = null;
     private double IMUDegress;
-    private double LLAngle;
+    PIDController turretPID;
+    private double P, D;
+
     private IMU imu;
     public void init() {
+
         //TURRET PID
-
-        PIDController turretPID =
-                new PIDController(0.012, 0.0, 0.001);
-
+        turretPID = new PIDController(P, 0.0, D);
         turretPID.setTolerance(0.5);
+        turretPID.setSetPoint(0);
 
         //IMU
         imu = hardwareMap.get(IMU.class, "imu");
@@ -82,14 +81,12 @@ public class DebugLLChassis extends OpMode {
         driver = new GamepadEx(gamepad1);
         follower.startTeleopDrive();
 
-
         //LIMELIGHT
         limelightChassis = hardwareMap.get(Limelight3A.class, "limelightTurret");
         limelightChassis.pipelineSwitch(0);
         limelightChassis.start();
 
         //MOTORS
-
         intake = hardwareMap.get(DcMotorEx.class, "intake");
         intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -105,13 +102,12 @@ public class DebugLLChassis extends OpMode {
         shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
     }
     public void loop(){
-        //THROUGHBORE ENCODER
 
+        //THROUGHBORE ENCODER
         encoder = (intake.getCurrentPosition() / 77.369);
         turretAngle = encoder;
 
         //IMU
-
         if (IMUTimer.hasExpired() && c < 1) {
             imu.resetYaw();
             IMUTimer.reset();
@@ -122,16 +118,12 @@ public class DebugLLChassis extends OpMode {
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
 
         // PINPOINT
-
         Pose followerPose = follower.getPose();
         double odoX = followerPose.getX();
         double odoY = followerPose.getY();
-        double odoH = followerPose.getHeading();
-        double odoHdegrees = Math.toDegrees(odoH);
 
 
         // LIMELIGHT
-
 //        double turretRadius = 7;
 //        double robotX = camX - (turretRadius * Math.cos(Math.toRadians(turretAngle)));
 //        double robotY = camY - (turretRadius * Math.sin(Math.toRadians(turretAngle)));
@@ -151,47 +143,57 @@ public class DebugLLChassis extends OpMode {
         }
 
         //ALPLHA FILTER & DISTANCE
-
         double fusedX = odoX;
         double fusedY = odoY;
 
         double errorVision = Math.hypot(camX - odoX, camY - odoY);
-        if (hasVision && errorVision > 1) {
+        if (hasVision && errorVision > 0.5) {
             fusedX = odoX * (1 - alphaXY) + camX * alphaXY;
             fusedY = odoY * (1 - alphaXY) + camY * alphaXY;
-            follower.setPose(new Pose(fusedX,fusedY,odoH));
         }
+        follower.setPose(new Pose(fusedX,fusedY,imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS)));
         double dx = GOAL_BLUE_X - fusedX;
         double dy = GOAL_BLUE_Y - fusedY;
 
         double distance = Math.hypot(dx, dy);
-        double angleToGoal =  AngleUnit.normalizeDegrees((Math.toDegrees(Math.atan2(dy, dx))) - IMUDegress - turretAngle);
 
         //TURRET SERVOS
+        double angleToGoal =  AngleUnit.normalizeDegrees((Math.toDegrees(Math.atan2(dy, dx))) - IMUDegress - turretAngle);
+        double turretError = AngleUnit.normalizeDegrees(angleToGoal);
+        double servoPower = turretPID.calculate(turretError);
+        servoPower = Math.max(-1, Math.min(1, servoPower));
 
-//         if (gamepad1.leftBumperWasPressed()) {
-//             leftAngle = 1;
-//             rightAngle = 1;
-//         }
-//
-//         if (gamepad1.rightBumperWasPressed()) {
-//             rightAngle = -1;
-//             leftAngle = -1;
-//         }
+        if (turretAngle > 115 && servoPower > 0) servoPower = 0;
+        if (turretAngle < -115 && servoPower < 0) servoPower = 0;
 
-        servoPower = angleToGoal * 0.015;
-        if (turretAngle > 115) {
-            double normalizationError = Math.abs(turretAngle) - 115;
-            servoPower = -normalizationError * 0.015;
-        } else if (turretAngle < -115) {
-            double normalizationError = Math.abs(turretAngle) - 115;
-            servoPower = normalizationError * 0.015;
+        if (Math.abs(turretError) < 0.4) {
+            servoPower = 0;
         }
+
+        //PIDF CALIBRATOR
+        int stepIndex = 1;
+        double[] stepSizes = {10,1,0.1,0.01,0.001,0.0001};
+        if (gamepad1.bWasPressed()) {
+            stepIndex = (stepIndex + 1) % stepSizes.length;
+        }
+
+        if (gamepad1.dpadLeftWasPressed()) {
+            D += stepSizes[stepIndex];
+        }
+        if (gamepad1.dpadRightWasPressed()) {
+            D -= stepSizes[stepIndex];
+        }
+        if (gamepad1.dpadUpWasPressed()) {
+            P += stepSizes[stepIndex];
+        }
+        if (gamepad1.dpadDownWasPressed()) {
+            P -= stepSizes[stepIndex];
+        }
+
         servo1.setPower(servoPower);
         servo2.setPower(servoPower);
 
         //SHOOTER AND HOOD POSITION
-
         hood_position = -0.8909748 + 0.0521592 * distance - 0.0006677889 * Math.pow(distance, 2) + 0.000003639036 * Math.pow(distance, 3) - 7.141361e-9 * Math.pow(distance, 4);
         hoodservo.setPosition(hood_position); //Set Hood position
 
@@ -211,12 +213,12 @@ public class DebugLLChassis extends OpMode {
             shooter2.setVelocity(0);
         }
 
-
+        telemetry.addData("P","%.5f (D-Pad U/D)",P);
+        telemetry.addData("D","%.5f (D-Pad L/R)",D);
+        telemetry.addData("Step Size","%.4f",stepSizes[stepIndex]);
+        telemetry.addLine("B - StepSize Switch");
         telemetry.addData("X LL", camX);
         telemetry.addData("Y LL", camY);
-        telemetry.addData("Heading", odoHdegrees);
-        telemetry.addData("OdoX", odoX);
-        telemetry.addData("OdoY", odoY);
         telemetry.addData("FusedX", fusedX);
         telemetry.addData("FusedY", fusedY);
         telemetry.addData("Distance", distance);
