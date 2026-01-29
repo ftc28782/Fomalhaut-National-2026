@@ -20,6 +20,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
+import com.seattlesolvers.solverslib.controller.PIDController;
 
 import java.util.concurrent.TimeUnit;
 
@@ -33,6 +34,7 @@ public class DebugLLChassis extends OpMode {
     private double camX = 0;
     private double camY = 0;
     Follower follower;
+
     double alphaXY = 0.2;
     private double hood_position = 0.585;
     GamepadEx driver;
@@ -51,6 +53,13 @@ public class DebugLLChassis extends OpMode {
     private double LLAngle;
     private IMU imu;
     public void init() {
+        //TURRET PID
+
+        PIDController turretPID =
+                new PIDController(0.012, 0.0, 0.001);
+
+        turretPID.setTolerance(0.5);
+
         //IMU
         imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
@@ -158,9 +167,7 @@ public class DebugLLChassis extends OpMode {
         double distance = Math.hypot(dx, dy);
         double angleToGoal =  AngleUnit.normalizeDegrees((Math.toDegrees(Math.atan2(dy, dx))) - IMUDegress - turretAngle);
 
-
-
-        //SERVO SETPOWER
+        //TURRET SERVOS
 
 //         if (gamepad1.leftBumperWasPressed()) {
 //             leftAngle = 1;
@@ -183,19 +190,13 @@ public class DebugLLChassis extends OpMode {
         servo1.setPower(servoPower);
         servo2.setPower(servoPower);
 
-        //SHOOTER
-
-        double shooter_power = (TargetVelocity * TicksPerRev / 60);
-
-        double Shooter1Vel = (shooter1.getVelocity() * 60 / TicksPerRev);
-        double Shooter2Vel = (shooter2.getVelocity() * 60 / TicksPerRev);
-        double CurrentVelocity = (Shooter1Vel + Shooter2Vel) / 2;
-        double error = TargetVelocity - CurrentVelocity;
+        //SHOOTER AND HOOD POSITION
 
         hood_position = -0.8909748 + 0.0521592 * distance - 0.0006677889 * Math.pow(distance, 2) + 0.000003639036 * Math.pow(distance, 3) - 7.141361e-9 * Math.pow(distance, 4);
+        hoodservo.setPosition(hood_position); //Set Hood position
 
+        double shooter_power = (TargetVelocity * TicksPerRev / 60);
         TargetVelocity = 1746.163 + 12.32215 * distance - 0.005318002 * Math.pow(distance, 2);
-
 
         if (gamepad1.left_trigger > .1) { //Intake
             intake.setPower(1);
@@ -209,7 +210,7 @@ public class DebugLLChassis extends OpMode {
             shooter1.setVelocity(0);
             shooter2.setVelocity(0);
         }
-        hoodservo.setPosition(hood_position); //Set Hood position
+
 
         telemetry.addData("X LL", camX);
         telemetry.addData("Y LL", camY);
