@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.pedropathing.Tuning.follower;
+
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -53,6 +55,7 @@ public class DebugLLChassis extends OpMode {
     private double D = 0.0015;
     public int stepIndex = 1;
     private IMU imu;
+    private double a;
 
     public void init() {
 
@@ -117,7 +120,7 @@ public class DebugLLChassis extends OpMode {
         }
         IMUDegress = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         follower.update();
-        follower.setTeleOpDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
+        follower.setTeleOpDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, true);
 
         // PINPOINT
         Pose followerPose = follower.getPose();
@@ -211,19 +214,29 @@ public class DebugLLChassis extends OpMode {
         double error = TargetVelocity - CurrentVelocity;
 
         boolean intakeByTrigger = gamepad1.left_trigger > 0.1;
-        boolean intakeByA = gamepad1.a && Math.abs(error) < 100;
+        boolean intakeByA = gamepad1.a && Math.abs(error) < 150;
 
         if (intakeByTrigger || intakeByA) {
             intake.setPower(1);
         } else {
             intake.setPower(0);
         }
-        if (gamepad1.right_trigger > .1) { //Shooter
-            shooter1.setVelocity(shooter_power);
-            shooter2.setVelocity(shooter_power);
-        } else {
-            shooter1.setVelocity(0);
-            shooter2.setVelocity(0);
+//        if (gamepad1.right_trigger > .1) { //Shooter
+//            shooter1.setVelocity(shooter_power);
+//            shooter2.setVelocity(shooter_power);
+//        } else {
+//            shooter1.setVelocity(0);
+//            shooter2.setVelocity(0);
+//        }
+        if (gamepad1.xWasPressed()) { //Shooter
+            a++;
+            if (a % 2 != 1) {
+                shooter1.setVelocity(shooter_power);
+                shooter2.setVelocity(shooter_power);
+            } else {
+                shooter1.setVelocity(0);
+                shooter2.setVelocity(0);
+            }
         }
 
         telemetry.addData("P","%.5f (D-Pad U/D)",P);
