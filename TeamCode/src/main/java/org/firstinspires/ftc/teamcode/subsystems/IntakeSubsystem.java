@@ -12,7 +12,7 @@ public class IntakeSubsystem extends SubsystemBase {
     DcMotor intake;
 
     public IntakeSubsystem(HardwareMap hardwareMap) {
-        intake = hardwareMap.get(DcMotor.class, "intake");
+        intake = hardwareMap.get(DcMotorEx.class, "intake");
     }
 
     public double getIntakePower() {

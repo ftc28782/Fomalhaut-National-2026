@@ -1,101 +1,120 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
-import com.seattlesolvers.solverslib.controller.PIDFController;
+import com.seattlesolvers.solverslib.controller.PIDController;
 import com.qualcomm.robotcore.util.Range;
+import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.internal.system.Deadline;
+import org.firstinspires.ftc.teamcode.SunriseRobot;
+import org.firstinspires.ftc.teamcode.pedropathing.Constants;
+
+import java.util.concurrent.TimeUnit;
 
 public class TurretSubsystem extends SubsystemBase {
+
+    private boolean hasVision;
+    Limelight3A limelightChassis;
+    private double camX;
+    private double camY;
+    Follower follower;
+    double alphaXY = 0.2;
+    private double hood_position = 0.585;
+    GamepadEx driver;
+    SunriseRobot robot;
+    CRServo servo1, servo2 = null;
+    DcMotorEx intake = null;
+    private double servoPower;
+    Deadline IMUTimer;
+    private double turretAngle;
+    private double encoder;
+    private double IMUDegress;
+    PIDController turretPID;
+    private IMU imu;
+    private double c;
     public enum Alliance {
         BLUE, RED
     }
-
     private Alliance alliance = Alliance.BLUE;
-
-    // TODO: Fill goal coordinates
     private final double GOAL_BLUE_X = -63, GOAL_BLUE_Y = -64;
     private final double GOAL_RED_X = -63, GOAL_RED_Y = 64;
-
-//    private final CRServo servo1/*, servoRight*/;
-//    private final DcMotorEx encoder;
-    private final PIDFController controller;
-
-    // Sensors
-    private final Limelight3A limelightTurret;
-//    private final Limelight3A limelightChassis;
-//    private final GoBildaPinpointDriver pinpoint;
-
-    // Aiming State
     public enum AimingMode {
         MANUAL,
         TURRET_CAM_TX,
         ROBOT_POSE
     }
     private AimingMode aimingMode = AimingMode.MANUAL;
-    private Pose2D currentRobotPose = new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0);
 
     // Encoder Gear: 50T, Turret Gear: 170T
     // Ratio: 170 / 50 = 3.4
     // REV Throughbore Encoder ticks: 8192
-    private static final double TICKS_PER_REV = 8192.0;
-    private static final double GEAR_RATIO = 3.4;
-    private static final double TICKS_PER_DEGREE = (TICKS_PER_REV * GEAR_RATIO) / 360.0;
-
-    // TODO: Tune PIDF values
-    public static double kF = 0.15;
-    public static double kP = 0.03;
-    public static double kI = 0.0;
-    public static double kD = 0.05;
-
     private boolean isManual = true;
     private double targetDegrees = 0.0;
+    private double fusedX;
+    private double fusedY;
 
+    public TurretSubsystem(HardwareMap hardwareMap) { //INIT
 
-    public TurretSubsystem(HardwareMap hardwareMap) {
-        // Initialize servos
-//        servo1 = hardwareMap.get(CRServo.class, "turretLeft");
-//        servoRight = hardwareMap.get(CRServo.class, "turretRight");
+        //TURRET PID
+        turretPID = new PIDController(0.014, 0.0, 0.0015);
+        turretPID.setTolerance(0.5);
+        turretPID.setSetPoint(0);
 
-//        servoRight.setDirection(CRServo.Direction.REVERSE);
+        //SERVOS
+        servo1 = hardwareMap.get(CRServo.class, "turretLeft");
+        servo2 = hardwareMap.get(CRServo.class, "rightTurret");
 
-//        encoder = hardwareMap.get(DcMotorEx.class, "turretEncoder");
-//        encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        encoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        // the turret encoder should increase when turning left
-        // encoder.setDirection(DcMotorSimple.Direction.REVERSE);
+        //THROUGHBORE ENCODER
+        intake = hardwareMap.get(DcMotorEx.class, "intake");
+        intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        controller = new PIDFController(kP, kI, kD, kF);
+        //LIMELIGHT
+        limelightChassis = hardwareMap.get(Limelight3A.class, "limelightTurret");
+        limelightChassis.pipelineSwitch(0);
+        limelightChassis.start();
 
-        // Initialize Sensors
-        limelightTurret = hardwareMap.get(Limelight3A.class, "limelightTurret");
-//        limelightChassis = hardwareMap.get(Limelight3A.class, "limelightChassis");
+        //PINPOINT
+        follower = Constants.createFollower(hardwareMap);
+        follower.setPose(new Pose(0,0,0));
 
-        limelightTurret.pipelineSwitch(0); // Assuming 0 is AprilTag
-//        limelightChassis.pipelineSwitch(0);
-
-        limelightTurret.start();
-//        limelightChassis.start();
-
-//        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
-//        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-//        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
-//        pinpoint.resetPosAndIMU();
+        //IMU
+        imu = hardwareMap.get(IMU.class, "imu");
+        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD
+        ));
+        imu.initialize(parameters);
+        IMUTimer = new Deadline(500, TimeUnit.MILLISECONDS);
     }
 
     @Override
     public void periodic() {
-        // Update Pose Estimation
+        //THROUGHBORE ENCODER
+        turretAngle = (intake.getCurrentPosition() / 77.369);
+
+        //IMU RESET
+        if (IMUTimer.hasExpired() && c < 1) {
+            imu.resetYaw();
+            IMUTimer.reset();
+            c = c + 1;
+        }
+        IMUDegress = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+
+        //UPDATE FOLLOWER
         updatePoseEstimation();
 
         // Handle Aiming Modes
@@ -104,96 +123,73 @@ public class TurretSubsystem extends SubsystemBase {
                 // Handled by manual() method calls
                 break;
             case TURRET_CAM_TX:
-                LLResult result = limelightTurret.getLatestResult();
+                LLResult result = limelightChassis.getLatestResult();
                 if (result != null && result.isValid()) {
                     double tx = result.getTx();
                     setPower(tx * -0.1);
                 }
                 break;
             case ROBOT_POSE:
-                alignToTargetRobotPoseBased(currentRobotPose.getX(DistanceUnit.INCH), currentRobotPose.getY(DistanceUnit.INCH));
+                alignToTargetRobotPoseBased();
                 break;
         }
 
-        if (aimingMode != AimingMode.MANUAL) { // If automating, update PID
-//            double currentDegrees = getPositionDegrees();
-//            double power = controller.calculate(currentDegrees, targetDegrees);
-//             setPower(power);
+        if (aimingMode != AimingMode.MANUAL) {
+             setPower(servoPower);
         }
     }
 
     private void updatePoseEstimation() {
-//        pinpoint.update();
-//        Pose2D odoPose = pinpoint.getPosition(); // Current belief of position
-
-//        double fusedX = odoPose.getX(DistanceUnit.INCH);
-//        double fusedY = odoPose.getY(DistanceUnit.INCH);
-//        double fusedH = odoPose.getHeading(AngleUnit.DEGREES);
-
-        double visionXSum = 0;
-        double visionYSum = 0;
-        int visionCount = 0;
+        follower.update();
 
         // 1. Chassis Limelight
-//        LLResult resultChassis = limelightChassis.getLatestResult();
-//        if (resultChassis != null && resultChassis.isValid()) {
-//             Pose3D botPose3D = resultChassis.getBotpose();
-//             if (botPose3D != null) {
-//                 visionXSum += botPose3D.getPosition().x * 39.3701; // Meters to Inches
-//                 visionYSum += botPose3D.getPosition().y * 39.3701;
+        hasVision = false;
+
+        LLResult resultTurret = limelightChassis.getLatestResult();
+        if (resultTurret != null && resultTurret.isValid()) {
+            Pose3D camPose3D = resultTurret.getBotpose_MT2();
+            if (camPose3D != null) {
+                camX = camPose3D.getPosition().x * 39.3701;
+                camY = camPose3D.getPosition().y * 39.3701;
+                hasVision = true;
+            }
+        }
+
+        // 2. Turret Limelight (Corrected)
+//        LLResult resultTurret = limelightTurret.getLatestResult();
+//        if (resultTurret != null && resultTurret.isValid()) {
+//             Pose3D camPose3D = resultTurret.getBotpose();
+//             if (camPose3D != null) {
+//                 // Treating BotPose as Camera Field Pose (assuming 0 offset in LL Config)
+//                 double camX = camPose3D.getPosition().x * 39.3701;
+//                 double camY = camPose3D.getPosition().y * 39.3701;
+//                 double camH = camPose3D.getOrientation().getYaw(AngleUnit.DEGREES);
+//
+//                 double turretRadius = 7.0;
+//                 double robotX = camX - (turretRadius * Math.cos(Math.toRadians(camH)));
+//                 double robotY = camY - (turretRadius * Math.sin(Math.toRadians(camH)));
+//
+//                 visionXSum += robotX;
+//                 visionYSum += robotY;
 //                 visionCount++;
 //             }
 //        }
 
-        // 2. Turret Limelight (Corrected)
-        LLResult resultTurret = limelightTurret.getLatestResult();
-        if (resultTurret != null && resultTurret.isValid()) {
-             Pose3D camPose3D = resultTurret.getBotpose();
-             if (camPose3D != null) {
-                 // Treating BotPose as Camera Field Pose (assuming 0 offset in LL Config)
-                 double camX = camPose3D.getPosition().x * 39.3701;
-                 double camY = camPose3D.getPosition().y * 39.3701;
-                 double camH = camPose3D.getOrientation().getYaw(AngleUnit.DEGREES);
+        Pose followerPose = follower.getPose();
+        double odoX = followerPose.getX();
+        double odoY = followerPose.getY();
 
-                 // Correct for Turret Camera Offset (Back-calculate Robot Center)
-                 // TODO: Measure exact radius from turret center to camera lens
-                 double turretRadius = 7.0; // Estimate: 6 inches
+        fusedX = odoX;
+        fusedY = odoY;
 
-                 // Calculate Robot Center based on Camera Field Pose and Camera Field Heading
-                 // We assume camera is mounted facing 'forward' on the turret
-                 double robotX = camX - (turretRadius * Math.cos(Math.toRadians(camH)));
-                 double robotY = camY - (turretRadius * Math.sin(Math.toRadians(camH)));
-
-                 visionXSum += robotX;
-                 visionYSum += robotY;
-                 visionCount++;
-             }
-        }
-
-        // Fusion Logic
-        if (visionCount > 0) {
-            double visionX = visionXSum / visionCount;
-            double visionY = visionYSum / visionCount;
-
-            // Calculate distance between current odometry and vision to detect "jumps"
-//            double dist = Math.hypot(visionX - fusedX, visionY - fusedY);
-
-            // ALPHA FILTER:
-            // If the difference is huge (start of match or lost tracking), trust vision more.
-            // If merely drifting, correct slowly.
-//            double alpha = (dist > 10.0) ? 0.5 : 0.05 * visionCount; // More sensors = slightly more trust
-
-//            fusedX = (1 - alpha) * fusedX + alpha * visionX;
-//            fusedY = (1 - alpha) * fusedY + alpha * visionY;
-
-            // IMPORTANT: Write the corrected pose back to the Pinpoint hardware
-            // This ensures that when vision is lost, odometry continues from the CORRECTED spot.
-//            Pose2D correctedPose = new Pose2D(DistanceUnit.INCH, fusedX, fusedY, AngleUnit.DEGREES, fusedH);
-//            pinpoint.setPosition(correctedPose);
+        double errorVision = Math.hypot(camX - odoX, camY - odoY);
+        if (hasVision && errorVision > 0.5) {
+            fusedX = odoX * (1 - alphaXY) + camX * alphaXY;
+            fusedY = odoY * (1 - alphaXY) + camY * alphaXY;
         }
 
         // Update our subsystem state
-//        currentRobotPose = new Pose2D(DistanceUnit.INCH, fusedX, fusedY, AngleUnit.DEGREES, fusedH);
+        follower.setPose(new Pose(fusedX,fusedY,imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS)));
     }
 
     public void setAimingMode(AimingMode mode) {
@@ -211,70 +207,56 @@ public class TurretSubsystem extends SubsystemBase {
 
     public void manual(double power) {
         if (Math.abs(power) > 0.1) {
-             setAimingMode(AimingMode.MANUAL);
-             setPower(power);
+            setAimingMode(AimingMode.MANUAL);
+            this.servoPower = power;
+            setPower(this.servoPower);
         } else if (aimingMode == AimingMode.MANUAL) {
-             setPower(0);
+            this.servoPower = 0;
+            setPower(this.servoPower);
         }
     }
 
 //    public double getPositionDegrees() {
-//        return encoder.getCurrentPosition() / TICKS_PER_DEGREE;
+//        return turretAngle = (intake.getCurrentPosition() / 77.369);
 //    }
 
-    private static final double MAX_DEGREES = 177.0;
-    private static final double MIN_DEGREES = -177.0;
+    private void setPower(double servoPower) {
 
-    private void setPower(double power) {
-//        double currentPos = getPositionDegrees();
-        // Soft Stops
-//        if (currentPos > MAX_DEGREES && power > 0) power = 0;
-//        if (currentPos < MIN_DEGREES && power < 0) power = 0;
-
-        power = Range.clip(power, -1.0, 1.0);
-//        servo1.setPower(power);
-//        servoRight.setPower(power);
+        servoPower = Range.clip(servoPower, -1.0, 1.0);
+        servo1.setPower(servoPower);
+        servo2.setPower(servoPower);
     }
 
-    public void setTargetPosition(double degrees) {
-        this.targetDegrees = Range.clip(degrees, MIN_DEGREES, MAX_DEGREES);
-        controller.setSetPoint(targetDegrees);
-    }
-
-    public void alignToTargetRobotPoseBased(double robotX, double robotY) {
+    public void alignToTargetRobotPoseBased() {
         double goalX = (alliance == Alliance.BLUE) ? GOAL_BLUE_X : GOAL_RED_X;
         double goalY = (alliance == Alliance.BLUE) ? GOAL_BLUE_Y : GOAL_RED_Y;
 
-        double deltaX = goalX - robotX;
-        double deltaY = goalY - robotY;
+        double dx = goalX - fusedX;
+        double dy = goalY - fusedY;
 
-        // Calculate Absolute Field Angle to Goal
-        double fieldAngleToGoal = Math.toDegrees(Math.atan2(deltaY, deltaX));
+        double angleToGoal = AngleUnit.normalizeDegrees(Math.toDegrees(Math.atan2(dy, dx)) - IMUDegress - turretAngle);
 
-        // Calculate Robot Heading (need to fetch from Pinpoint or Odometry)
-        // Note: currentRobotPose is updated in periodic() from Pinpoint+Vision
-        double robotHeading = currentRobotPose.getHeading(AngleUnit.DEGREES);
+        servoPower = -turretPID.calculate(angleToGoal);
+                //+ (chassisTurn * 1);
 
-        // Calculate Turret Relative Angle (Goal - Robot)
-        double relativeAngle = fieldAngleToGoal - robotHeading;
-
-        // Normalize to -180 to 180 to find shortest path
-        while (relativeAngle > 180) relativeAngle -= 360;
-        while (relativeAngle <= -180) relativeAngle += 360;
-
-        setTargetPosition(relativeAngle);
+        if (turretAngle > 135 && servoPower > 0) {
+            servoPower = 0;
+        }
+        if (turretAngle < -135 && servoPower < 0) {
+            servoPower = 0;
+        }
     }
 
     public double getTargetDegrees() {
         return targetDegrees;
     }
 
-    public Pose2D getCurrentRobotPose() {
-        return currentRobotPose;
+    public Pose getCurrentRobotPose() {
+        return follower.getPose();
     }
 
     public boolean isTargetVisible() {
-        LLResult result = limelightTurret.getLatestResult();
+        LLResult result = limelightChassis.getLatestResult();
         return result != null && result.isValid();
     }
 

@@ -41,7 +41,7 @@ public class DebugLLChassis extends OpMode {
     CRServo servo1, servo2 = null;
     DcMotorEx shooter1, shooter2, intake= null;
     Servo hoodservo = null;
-    private double servoPower = 0;
+    private double servoPower;
     private final double GOAL_BLUE_X = -63, GOAL_BLUE_Y = -64;
     private double c = 0;
     Deadline IMUTimer;
@@ -117,7 +117,7 @@ public class DebugLLChassis extends OpMode {
         }
         IMUDegress = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         follower.update();
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
+        follower.setTeleOpDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
 
         // PINPOINT
         Pose followerPose = follower.getPose();
@@ -166,10 +166,14 @@ public class DebugLLChassis extends OpMode {
         if (Math.abs(angleToGoal) < 0.4) {
             angleToGoal = 0;
         }
-        double servoPower = -turretPID.calculate(angleToGoal) + (chassisTurn * 1);
+        servoPower = -turretPID.calculate(angleToGoal) + (chassisTurn * 1);
 
-        if (turretAngle > 115 && servoPower > 0) servoPower = 0;
-        if (turretAngle < -115 && servoPower < 0) servoPower = 0;
+        if (turretAngle > 135 && servoPower > 0) {
+            servoPower = 0;
+        }
+        if (turretAngle < -135 && servoPower < 0) {
+            servoPower = 0;
+        }
         servo1.setPower(servoPower);
         servo2.setPower(servoPower);
 
