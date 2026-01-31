@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.pedropathing.Tuning.follower;
-
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -39,13 +37,13 @@ public class DebugLLChassis extends OpMode {
     double alphaXY = 0.2;
     private double hood_position = 0.585;
     GamepadEx driver;
-    SunriseRobot robot;
+    // SunriseRobot robot; // Unused
     CRServo servo1, servo2 = null;
     DcMotorEx shooter1, shooter2, intake= null;
     Servo hoodservo = null;
     private double servoPower;
     private final double GOAL_BLUE_X = -63, GOAL_BLUE_Y = -64;
-    private double c = 0;
+    private boolean imuResetComplete = false;
     Deadline IMUTimer;
     private double turretAngle;
     private double encoder;
@@ -55,7 +53,7 @@ public class DebugLLChassis extends OpMode {
     private double D = 0.0015;
     public int stepIndex = 1;
     private IMU imu;
-    private double a;
+    private boolean shooterActive = false;
 
     public void init() {
 
@@ -80,7 +78,7 @@ public class DebugLLChassis extends OpMode {
         //PINPOINT
         follower = Constants.createFollower(hardwareMap);
         follower.setPose(new Pose(0,0,0));
-        robot = new SunriseRobot(SunriseRobot.OpModeType.TELEOP, hardwareMap);
+        // robot = new SunriseRobot(SunriseRobot.OpModeType.TELEOP, hardwareMap);
 
         //TELEOP
         driver = new GamepadEx(gamepad1);
@@ -108,19 +106,21 @@ public class DebugLLChassis extends OpMode {
     }
     public void loop(){
 
+        // UPDATE DRIVER INPUTS
+        driver.readButtons(); // Process WasPressed events
+
         //THROUGHBORE ENCODER
         encoder = (intake.getCurrentPosition() / 77.369);
         turretAngle = encoder;
 
         //IMU
-        if (IMUTimer.hasExpired() && c < 1) {
+        if (IMUTimer.hasExpired() && !imuResetComplete) {
             imu.resetYaw();
-            IMUTimer.reset();
-           c = c + 1;
+            imuResetComplete = true;
         }
         IMUDegress = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         follower.update();
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, true);
+        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false);
 
         // PINPOINT
         Pose followerPose = follower.getPose();
@@ -163,13 +163,13 @@ public class DebugLLChassis extends OpMode {
         double distance = Math.hypot(dx, dy);
 
         //TURRET SERVOS
-        double chassisTurn = gamepad1.right_stick_x;
+//        double chassisTurn = gamepad1.right_stick_x;
 
         double angleToGoal = AngleUnit.normalizeDegrees(Math.toDegrees(Math.atan2(dy, dx)) - IMUDegress - turretAngle);
         if (Math.abs(angleToGoal) < 0.4) {
             angleToGoal = 0;
         }
-        servoPower = -turretPID.calculate(angleToGoal) + (chassisTurn * 1);
+        servoPower = -turretPID.calculate(angleToGoal) /* + (chassisTurn * 1)*/;
 
         if (turretAngle > 135 && servoPower > 0) {
             servoPower = 0;
@@ -205,8 +205,10 @@ public class DebugLLChassis extends OpMode {
         hood_position = -0.8909748 + 0.0521592 * distance - 0.0006677889 * Math.pow(distance, 2) + 0.000003639036 * Math.pow(distance, 3) - 7.141361e-9 * Math.pow(distance, 4);
         hoodservo.setPosition(hood_position); //Set Hood position
 
+        // Calculate Target Velocity FIRST, then use it for power
+//        TargetVelocity = 1746.163 + 12.32215 * distance - 0.005318002 * Math.pow(distance, 2);
+        TargetVelocity = 1746.163 + 12.7 * distance - 0.005318002 * Math.pow(distance, 2);
         double shooter_power = (TargetVelocity * TicksPerRev / 60);
-        TargetVelocity = 1746.163 + 12.32215 * distance - 0.005318002 * Math.pow(distance, 2);
 
         double Shooter1Vel = (shooter1.getVelocity() * 60 / TicksPerRev);
         double Shooter2Vel = (shooter2.getVelocity() * 60 / TicksPerRev);
@@ -221,22 +223,18 @@ public class DebugLLChassis extends OpMode {
         } else {
             intake.setPower(0);
         }
-//        if (gamepad1.right_trigger > .1) { //Shooter
-//            shooter1.setVelocity(shooter_power);
-//            shooter2.setVelocity(shooter_power);
-//        } else {
-//            shooter1.setVelocity(0);
-//            shooter2.setVelocity(0);
-//        }
-        if (gamepad1.xWasPressed()) { //Shooter
-            a++;
-            if (a % 2 != 1) {
-                shooter1.setVelocity(shooter_power);
-                shooter2.setVelocity(shooter_power);
-            } else {
-                shooter1.setVelocity(0);
-                shooter2.setVelocity(0);
-            }
+
+        // Toggle Shooter
+        if (gamepad1.xWasPressed()) {
+            shooterActive = !shooterActive;
+        }
+
+        if (shooterActive) {
+            shooter1.setVelocity(shooter_power);
+            shooter2.setVelocity(shooter_power);
+        } else {
+            shooter1.setVelocity(0);
+            shooter2.setVelocity(0);
         }
 
         telemetry.addData("P","%.5f (D-Pad U/D)",P);

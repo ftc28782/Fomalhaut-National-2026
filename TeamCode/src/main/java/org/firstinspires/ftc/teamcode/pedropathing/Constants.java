@@ -32,11 +32,11 @@ public class Constants {
     .leftRearMotorName("backLeft")
     .rightFrontMotorName("frontRight")
     .rightRearMotorName("backRight")
-    .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
+    .leftFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
     .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
     .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
     .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
-    .useBrakeModeInTeleOp(false);
+    .useBrakeModeInTeleOp(true);
 
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
