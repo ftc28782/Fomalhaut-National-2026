@@ -19,6 +19,7 @@ public class DebugSubsystemChassis extends OpMode {
     }
     public void loop(){
 
+        follower.update();
         fomahault.Run();
         follower.setTeleOpDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, true);
 

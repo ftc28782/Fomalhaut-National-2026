@@ -38,7 +38,7 @@ public class FomahaultSubsystem{
     DcMotorEx shooter1, shooter2, intake = null;
     Servo hoodservo = null;
     double servoPower;
-    final double GOAL_BLUE_X = -63, GOAL_BLUE_Y = -64;
+    final double GOAL_BLUE_X = -66, GOAL_BLUE_Y = -66;
     double c = 0;
     Deadline IMUTimer;
     double turretAngle;
@@ -112,7 +112,6 @@ public class FomahaultSubsystem{
             c = c + 1;
         }
         IMUDegress = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
-        follower.update();
         // PINPOINT
         Pose followerPose = follower.getPose();
         double odoX = followerPose.getX();
