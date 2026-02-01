@@ -226,7 +226,7 @@ public class DebugLLChassis extends OpMode {
         double error = TargetVelocity - CurrentVelocity;
 
         boolean intakeByTrigger = gamepad1.left_trigger > 0.1;
-        boolean intakeByA = gamepad1.a && Math.abs(error) < 150;
+        boolean intakeByA = gamepad1.a && Math.abs(error) < 250;
 
         if (intakeByTrigger || intakeByA) {
             intake.setPower(1);
@@ -265,6 +265,7 @@ public class DebugLLChassis extends OpMode {
         telemetry.addData("IMUAngle", IMUDegress);
         telemetry.addData("Turret Angle", turretAngle);
         telemetry.addData("Angle to Goal", angleToGoal);
+        telemetry.addData("Hood", hood_position);
 
         telemetry.update();
     }
