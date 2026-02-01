@@ -1,0 +1,313 @@
+package org.firstinspires.ftc.teamcode.pedropathing;
+
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierCurve;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.pedropathing.util.Timer;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.seattlesolvers.solverslib.controller.PIDController;
+import com.seattlesolvers.solverslib.gamepad.GamepadEx;
+
+import org.firstinspires.ftc.robotcore.internal.system.Deadline;
+import org.firstinspires.ftc.teamcode.DebugLLChassis;
+import org.firstinspires.ftc.teamcode.SunriseRobot;
+
+@Autonomous(name = "Auto FRONT BLUE")
+public class AutoFrontBlue12 extends OpMode {
+
+    Follower follower;
+    private Timer pathTimer, opModeTimer;
+    public int pathState = 0;
+    private boolean stateInit, arrived = false;
+    private static double StartX = 30.3;
+    private static double StartY = 132.5;
+    private static String Phrase = "Nada";
+    private Paths paths;
+    public void statePathUpdate() {
+        switch (pathState) {
+
+            case 0:
+                if (!stateInit) {
+                    follower.followPath(paths.StartShot1);
+                    Phrase = "Shot 1";
+                    stateInit = true;
+                }
+
+                if (!follower.isBusy() && !arrived) {
+                    arrived = true;
+                    pathTimer.resetTimer();
+                }
+                if (!follower.isBusy()) {
+                    Phrase = "Shooting";
+
+
+                    if (pathTimer.getElapsedTimeSeconds() > 3) {
+                        setPathState(1);
+                    }
+                }
+                break;
+
+            case 1:
+                if (!stateInit) {
+                    follower.followPath(paths.ToIntake1);
+                    Phrase = "To Intake 1";
+                    stateInit = true;
+                }
+                if (!follower.isBusy()) setPathState(2);
+                break;
+
+            case 2:
+                if (!stateInit) {
+                    follower.followPath(paths.Intake1);
+                    Phrase = "Intaking 1";
+                    stateInit = true;
+                }
+                if (!follower.isBusy()) setPathState(3);
+                break;
+
+            case 3:
+                if (!stateInit) {
+                    follower.followPath(paths.Return1Shot2);
+                    Phrase = "Shot 2";
+                    stateInit = true;
+                }
+
+                if (!follower.isBusy() && !arrived) {
+                    arrived = true;
+                    pathTimer.resetTimer();
+                }
+                if (!follower.isBusy()) {
+                    Phrase = "Shooting";
+
+
+                    if (pathTimer.getElapsedTimeSeconds() > 3) {
+                        setPathState(4);
+                    }
+                }
+                break;
+            case 4:
+                if (!stateInit) {
+                    follower.followPath(paths.ToIntake2);
+                    Phrase = "To Intake 2";
+                    stateInit = true;
+                }
+                if (!follower.isBusy()) setPathState(5);
+                break;
+
+            case 5:
+                if (!stateInit) {
+                    follower.followPath(paths.Intake2);
+                    Phrase = "Intaking 2";
+                    stateInit = true;
+                }
+                if (!follower.isBusy()) setPathState(6);
+                break;
+
+            case 6:
+                if (!stateInit) {
+                    follower.followPath(paths.Return5Shot3);
+                    Phrase = "Shot 3";
+                    stateInit = true;
+                }
+                if (!follower.isBusy()) setPathState(7);
+                break;
+
+            case 7:
+                if (!stateInit) {
+                    follower.followPath(paths.ToIntake3);
+                    Phrase = "To Intake 3";
+                    stateInit = true;
+                }
+                if (!follower.isBusy()) setPathState(8);
+                break;
+
+            case 8:
+                if (!stateInit) {
+                    follower.followPath(paths.Intake3);
+                    Phrase = "Intaking 3";
+                    stateInit = true;
+                }
+                if (!follower.isBusy()) setPathState(9);
+                break;
+
+            case 9:
+                if (!stateInit) {
+                    follower.followPath(paths.Return6Shot4);
+                    Phrase = "Shot 4";
+                    stateInit = true;
+                }
+                if (!follower.isBusy()) setPathState(10);
+                break;
+
+            case 10:
+                if (!stateInit) {
+                    follower.followPath(paths.EndPoint);
+                    Phrase = "End";
+                    stateInit = true;
+                }
+                break;
+        }
+    }
+
+    public void setPathState(int newState) {
+        pathState = newState;
+        stateInit = false;
+        arrived = false;
+        pathTimer.resetTimer();
+    }
+
+    @Override
+    public void init() {
+        pathTimer = new Timer();
+        opModeTimer = new Timer();
+        follower = Constants.createFollower(hardwareMap);
+        follower.setPose(new Pose(StartX, StartY, Math.toRadians(180)));
+        paths = new Paths(follower);
+    }
+
+    @Override
+    public void start() {
+        opModeTimer.resetTimer();
+        setPathState(0);
+    }
+
+    @Override
+    public void loop() {
+        follower.update();
+        statePathUpdate();
+        telemetry.addData("Time", opModeTimer.getElapsedTimeSeconds());
+        telemetry.addData("X", follower.getPose().getX());
+        telemetry.addData("Y", follower.getPose().getY());
+        telemetry.addData("Heading", follower.getPose().getHeading());
+        telemetry.addData("State", pathState);
+        telemetry.addData("Action", Phrase);
+        telemetry.addData("PathTimer", pathTimer.getElapsedTimeSeconds());
+        telemetry.update();
+    }
+
+    public static class Paths {
+        public PathChain StartShot1, ToIntake1, Intake1, Return1Shot2, ToIntake2, Intake2, Return5Shot3, ToIntake3, Intake3, Return6Shot4, EndPoint;
+
+        public Paths(Follower follower) {
+
+            StartShot1 = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(32.394, 135.456),
+
+                                    new Pose(52.162, 91.283)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(270), Math.toRadians(135))
+
+                    .build();
+
+            ToIntake1 = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(52.162, 91.283),
+
+                                    new Pose(43.283, 84.069)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(180))
+
+                    .build();
+
+            Intake1 = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(43.283, 84.069),
+
+                                    new Pose(13.659, 83.700)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+
+                    .build();
+
+            Return1Shot2 = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(13.659, 83.700),
+
+                                    new Pose(52.994, 90.173)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(135))
+
+                    .build();
+
+            ToIntake2 = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(52.994, 90.173),
+
+                                    new Pose(43.006, 59.500)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(180))
+
+                    .build();
+
+            Intake2 = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(43.006, 59.500),
+
+                                    new Pose(6.761, 59.438)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+
+                    .build();
+
+            Return5Shot3 = follower.pathBuilder().addPath(
+                            new BezierCurve(
+                                    new Pose(6.761, 59.438),
+                                    new Pose(33.438, 56.577),
+                                    new Pose(53.827, 89.064)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(135))
+
+                    .build();
+
+            ToIntake3 = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(53.827, 89.064),
+
+                                    new Pose(45.283, 36.000)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(180))
+
+                    .build();
+
+            Intake3 = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(45.283, 36.000),
+
+                                    new Pose(7.500, 35.630)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+
+                    .build();
+
+            Return6Shot4 = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(7.500, 35.630),
+
+                                    new Pose(54.659, 88.231)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(135))
+
+                    .build();
+
+            EndPoint = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(54.659, 88.231),
+
+                                    new Pose(20.534, 71.615)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(180))
+
+                    .build();
+            }
+        }
+    }
+
