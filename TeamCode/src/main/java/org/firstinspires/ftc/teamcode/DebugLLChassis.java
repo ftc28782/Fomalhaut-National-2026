@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.pedropathing.Tuning.follower;
-
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -30,8 +28,8 @@ import java.util.concurrent.TimeUnit;
 public class DebugLLChassis extends OpMode {
     private boolean hasVision;
     Limelight3A limelightChassis;
-    private double TargetVelocity = 3500;
-    private double TicksPerRev = 28;
+    public double TargetVelocity = 3500;
+    public double TicksPerRev = 28;
     private double camX;
     private double camY;
     Follower follower;
@@ -40,10 +38,10 @@ public class DebugLLChassis extends OpMode {
     GamepadEx driver;
     SunriseRobot robot;
     CRServo servo1, servo2 = null;
-    DcMotorEx shooter1, shooter2, intake = null;
+    DcMotorEx shooter1, shooter2, intake= null;
     Servo hoodservo = null;
     private double servoPower;
-    private final double GOAL_BLUE_X = -66, GOAL_BLUE_Y = -66;
+    private final double GOAL_BLUE_X = -63, GOAL_BLUE_Y = -64;
     private double c = 0;
     Deadline IMUTimer;
     private double turretAngle;
@@ -52,7 +50,7 @@ public class DebugLLChassis extends OpMode {
     PIDController turretPID;
     private double P = 0.014;
     private double D = 0.0015;
-    private int stepIndex = 1;
+    public int stepIndex = 1;
     private IMU imu;
     private double a;
 
@@ -60,7 +58,7 @@ public class DebugLLChassis extends OpMode {
 
         //TURRET PID
         turretPID = new PIDController(P, 0.0, D);
-        turretPID.setTolerance(0);
+        turretPID.setTolerance(0.5);
         turretPID.setSetPoint(0);
 
         //IMU
@@ -107,6 +105,9 @@ public class DebugLLChassis extends OpMode {
     }
     public void loop(){
 
+        // UPDATE DRIVER INPUTS
+        driver.readButtons(); // Process WasPressed events
+
         //THROUGHBORE ENCODER
         encoder = (intake.getCurrentPosition() / 77.369);
         turretAngle = encoder;
@@ -115,11 +116,11 @@ public class DebugLLChassis extends OpMode {
         if (IMUTimer.hasExpired() && c < 1) {
             imu.resetYaw();
             IMUTimer.reset();
-            c = c + 1;
+           c = c + 1;
         }
         IMUDegress = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         follower.update();
-        follower.setTeleOpDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, true);
+        follower.setTeleOpDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, true);
 
         // PINPOINT
         Pose followerPose = follower.getPose();
@@ -201,15 +202,7 @@ public class DebugLLChassis extends OpMode {
         turretPID.setPID(P, 0, D);
 
         //SHOOTER AND HOOD POSITION
-//        hood_position = -0.8909748 + 0.0521592 * distance - 0.0006677889 * Math.pow(distance, 2) + 0.000003639036 * Math.pow(distance, 3) - 7.141361e-9 * Math.pow(distance, 4);
-
-        if (gamepad1.leftBumperWasPressed()) {
-            hood_position = hood_position + 0.01;
-        }
-        if (gamepad1.rightBumperWasPressed()) {
-            hood_position = hood_position - 0.01;
-        }
-
+        hood_position = -0.8909748 + 0.0521592 * distance - 0.0006677889 * Math.pow(distance, 2) + 0.000003639036 * Math.pow(distance, 3) - 7.141361e-9 * Math.pow(distance, 4);
         hoodservo.setPosition(hood_position); //Set Hood position
 
         double shooter_power = (TargetVelocity * TicksPerRev / 60);

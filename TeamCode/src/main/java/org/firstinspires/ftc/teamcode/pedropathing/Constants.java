@@ -21,14 +21,10 @@ public class Constants {
             .useSecondaryTranslationalPIDF(false)
             .useSecondaryHeadingPIDF(false)
             .useSecondaryDrivePIDF(false)
-            .translationalPIDFCoefficients(new PIDFCoefficients(0, 0, 0, 0))
-            .headingPIDFCoefficients(new PIDFCoefficients(1.5, 0, 0.2, 0.02))
+            .translationalPIDFCoefficients(new PIDFCoefficients(1.5, 0, 0.2, 0.02))
+            .headingPIDFCoefficients(new PIDFCoefficients(0.5, 0, 0.05, 0.02))
             .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.006,0.0,0.0001,0.3,0.0))
-            .centripetalScaling(0.0005)
-            .forwardZeroPowerAcceleration(-48.68)
-            .lateralZeroPowerAcceleration(0);
-
-
+            .centripetalScaling(0.0005);
 
     public static MecanumConstants driveConstants = new MecanumConstants()
     .maxPower(1)
@@ -37,13 +33,10 @@ public class Constants {
     .rightFrontMotorName("frontRight")
     .rightRearMotorName("backRight")
     .leftFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-    .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-    .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-    .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-    .useBrakeModeInTeleOp(false)
-    .xVelocity(61.12)
-    .yVelocity(0);
-
+    .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+    .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
+    .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+    .useBrakeModeInTeleOp(true);
 
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
@@ -63,6 +56,5 @@ public class Constants {
                 .mecanumDrivetrain(driveConstants)
                 .pinpointLocalizer(localizerConstants)
                 .build();
-
     }
 }
