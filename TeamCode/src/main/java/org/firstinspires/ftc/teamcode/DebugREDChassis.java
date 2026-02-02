@@ -24,8 +24,8 @@ import org.firstinspires.ftc.teamcode.pedropathing.Constants;
 
 import java.util.concurrent.TimeUnit;
 
-@TeleOp(name = "Blue Alliance Teleop")
-public class DebugLLChassis extends OpMode {
+@TeleOp(name = "Red Alliance Teleop")
+public class DebugREDChassis extends OpMode {
     private boolean hasVision;
     Limelight3A limelightChassis;
     public double TargetVelocity = 3500;
@@ -41,7 +41,7 @@ public class DebugLLChassis extends OpMode {
     DcMotorEx shooter1, shooter2, intake= null;
     Servo hoodservo = null;
     private double servoPower;
-    private final double GOAL_BLUE_X = -66, GOAL_BLUE_Y = -66;
+    private final double GOAL_BLUE_X = -66, GOAL_BLUE_Y = 66;
     private double c = 0;
     Deadline IMUTimer;
     private double turretAngle;
@@ -50,7 +50,6 @@ public class DebugLLChassis extends OpMode {
     PIDFController turretPID;
     private double P = 0.014;
     private double D = 0.0015;
-    private double F = 0;
     public int stepIndex = 1;
     private IMU imu;
     private double a;
@@ -58,7 +57,7 @@ public class DebugLLChassis extends OpMode {
     public void init() {
 
         //TURRET PID
-        turretPID = new PIDFController(P, 0.0, D, F);
+        turretPID = new PIDFController(P, 0.0, D, 0);
         turretPID.setTolerance(0.5);
         turretPID.setSetPoint(0);
 
@@ -117,11 +116,11 @@ public class DebugLLChassis extends OpMode {
         if (IMUTimer.hasExpired() && c < 1) {
             imu.resetYaw();
             IMUTimer.reset();
-           c = c + 1;
+            c = c + 1;
         }
         IMUDegress = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         follower.update();
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false, 1.5708);
+        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false,-1.5708);
 
         // PINPOINT
         Pose followerPose = follower.getPose();
@@ -199,14 +198,8 @@ public class DebugLLChassis extends OpMode {
         if (gamepad1.dpadDownWasPressed()) {
             P -= stepSizes[stepIndex];
         }
-        if (gamepad1.leftBumperWasPressed()) {
-            F += stepSizes[stepIndex];
-        }
-        if (gamepad1.rightBumperWasPressed()) {
-            F -= stepSizes[stepIndex];
-        }
 
-        turretPID.setPIDF(P, 0, D, F);
+        turretPID.setPIDF(P, 0, D, 0);
 
         //SHOOTER AND HOOD POSITION
 //        hood_position = -0.8909748 + 0.0521592 * distance - 0.0006677889 * Math.pow(distance, 2) + 0.000003639036 * Math.pow(distance, 3) - 7.141361e-9 * Math.pow(distance, 4);
@@ -254,8 +247,6 @@ public class DebugLLChassis extends OpMode {
         telemetry.addData("Turret Angle", turretAngle);
         telemetry.addData("Angle to Goal", angleToGoal);
         telemetry.addData("Hood", hood_position);
-        telemetry.addData("F", F);
-
         telemetry.update();
     }
 }

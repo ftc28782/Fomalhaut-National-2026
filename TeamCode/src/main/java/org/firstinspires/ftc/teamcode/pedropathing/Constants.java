@@ -21,10 +21,12 @@ public class Constants {
             .useSecondaryTranslationalPIDF(false)
             .useSecondaryHeadingPIDF(false)
             .useSecondaryDrivePIDF(false)
-            .translationalPIDFCoefficients(new PIDFCoefficients(1.5, 0, 0.2, 0.02))
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.12, 0, 0.012, 0.035))
             .headingPIDFCoefficients(new PIDFCoefficients(0.5, 0, 0.05, 0.02))
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.006,0.0,0.0001,0.3,0.0))
-            .centripetalScaling(0.0005);
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.01,0.0,0.0002,0.6,0.0))
+            .centripetalScaling(0.0005)
+            .forwardZeroPowerAcceleration(-42.901)
+            .lateralZeroPowerAcceleration(-67.8464);
 
     public static MecanumConstants driveConstants = new MecanumConstants()
     .maxPower(1)
@@ -32,11 +34,13 @@ public class Constants {
     .leftRearMotorName("backLeft")
     .rightFrontMotorName("frontRight")
     .rightRearMotorName("backRight")
-    .leftFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
+    .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
     .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
     .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
     .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
-    .useBrakeModeInTeleOp(true);
+    .useBrakeModeInTeleOp(true)
+    .xVelocity(60.755)
+    .yVelocity(48.707); //mudar uns 2 inches na configuracao da limelight
 
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
@@ -47,9 +51,7 @@ public class Constants {
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
-    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100,
-            1.4,
-            1);
+    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1.4, 1);
 
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)

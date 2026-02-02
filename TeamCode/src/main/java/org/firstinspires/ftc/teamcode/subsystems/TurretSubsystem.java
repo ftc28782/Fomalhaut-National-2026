@@ -32,7 +32,7 @@ public class TurretSubsystem extends SubsystemBase {
     private double camY;
     Follower follower;
     double alphaXY = 0.2;
-    private double hood_position = 0.585;
+    private double hood_position = 1;
     GamepadEx driver;
     SunriseRobot robot;
     CRServo servo1, servo2 = null;
