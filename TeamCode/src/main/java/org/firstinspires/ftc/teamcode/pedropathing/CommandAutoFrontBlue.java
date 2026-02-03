@@ -35,6 +35,8 @@ public class CommandAutoFrontBlue extends CommandOpMode {
         // Build paths
         paths = new AutoPaths();
 
+        while(!opModeIsActive());
+
         // Set up the turret tracking as default command (runs continuously)
         robot.turret.setDefaultCommand(
                 new TurretTrackCommand(
