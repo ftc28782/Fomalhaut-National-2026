@@ -18,7 +18,6 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.DebugLLChassis;
-import org.firstinspires.ftc.teamcode.SunriseRobot;
 
 @Autonomous(name = "Auto Back Blue")
 public class AutoBackBlue extends OpMode {

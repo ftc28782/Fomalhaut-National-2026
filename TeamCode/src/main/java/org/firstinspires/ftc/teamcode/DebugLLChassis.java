@@ -36,7 +36,6 @@ public class DebugLLChassis extends OpMode {
     double alphaXY = 0.2;
     private double hood_position = 1;
     GamepadEx driver;
-    SunriseRobot robot;
     CRServo servo1, servo2 = null;
     DcMotorEx shooter1, shooter2, intake= null;
     Servo hoodservo = null;
@@ -78,7 +77,6 @@ public class DebugLLChassis extends OpMode {
         //PINPOINT
         follower = Constants.createFollower(hardwareMap);
         follower.setPose(new Pose(0,0,0));
-        robot = new SunriseRobot(SunriseRobot.OpModeType.TELEOP, hardwareMap);
 
         //TELEOP
         driver = new GamepadEx(gamepad1);
