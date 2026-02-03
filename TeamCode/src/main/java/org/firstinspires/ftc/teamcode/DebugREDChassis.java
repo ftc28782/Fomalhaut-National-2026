@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
@@ -37,7 +38,7 @@ public class DebugREDChassis extends OpMode {
     private double hood_position = 1;
     GamepadEx driver;
     SunriseRobot robot;
-    CRServo servo1, servo2 = null;
+    CRServo servo1, servo2, transferServo = null;
     DcMotorEx shooter1, shooter2, intake= null;
     Servo hoodservo = null;
     private double servoPower;
@@ -53,7 +54,9 @@ public class DebugREDChassis extends OpMode {
     public int stepIndex = 1;
     private IMU imu;
     private double a;
+    private double transferPower;
 
+    private double intakePower;
     public void init() {
 
         //TURRET PID
@@ -73,6 +76,7 @@ public class DebugREDChassis extends OpMode {
         //SERVO
         servo1 = hardwareMap.get(CRServo.class, "turretLeft");
         servo2 = hardwareMap.get(CRServo.class, "rightTurret");
+        transferServo = hardwareMap.get(CRServo.class, "transferServo");
 
         //PINPOINT
         follower = Constants.createFollower(hardwareMap);
@@ -120,7 +124,7 @@ public class DebugREDChassis extends OpMode {
         }
         IMUDegress = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         follower.update();
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false,-1.5708);
+        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false,1.5708);
 
         // PINPOINT
         Pose followerPose = follower.getPose();
@@ -152,11 +156,11 @@ public class DebugREDChassis extends OpMode {
         double fusedY = odoY;
 
         double errorVision = Math.hypot(camX - odoX, camY - odoY);
-        if (hasVision && errorVision > 0.5) {
+        if (hasVision && errorVision > 3) {
             fusedX = odoX * (1 - alphaXY) + camX * alphaXY;
             fusedY = odoY * (1 - alphaXY) + camY * alphaXY;
-        }
         follower.setPose(new Pose(fusedX,fusedY,(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS))));
+        }
         double dx = GOAL_BLUE_X - fusedX;
         double dy = GOAL_BLUE_Y - fusedY;
 
@@ -180,24 +184,24 @@ public class DebugREDChassis extends OpMode {
         servo1.setPower(servoPower);
         servo2.setPower(servoPower);
 
-        //PIDF CALIBRATOR
-        double[] stepSizes = {10,1,0.1,0.01,0.001,0.0001};
-        if (gamepad1.bWasPressed()) {
-            stepIndex = (stepIndex + 1) % stepSizes.length;
-        }
-
-        if (gamepad1.dpadLeftWasPressed()) {
-            D += stepSizes[stepIndex];
-        }
-        if (gamepad1.dpadRightWasPressed()) {
-            D -= stepSizes[stepIndex];
-        }
-        if (gamepad1.dpadUpWasPressed()) {
-            P += stepSizes[stepIndex];
-        }
-        if (gamepad1.dpadDownWasPressed()) {
-            P -= stepSizes[stepIndex];
-        }
+//        //PIDF CALIBRATOR
+//        double[] stepSizes = {10,1,0.1,0.01,0.001,0.0001};
+//        if (gamepad1.bWasPressed()) {
+//            stepIndex = (stepIndex + 1) % stepSizes.length;
+//        }
+//
+//        if (gamepad1.dpadLeftWasPressed()) {
+//            D += stepSizes[stepIndex];
+//        }
+//        if (gamepad1.dpadRightWasPressed()) {
+//            D -= stepSizes[stepIndex];
+//        }
+//        if (gamepad1.dpadUpWasPressed()) {
+//            P += stepSizes[stepIndex];
+//        }
+//        if (gamepad1.dpadDownWasPressed()) {
+//            P -= stepSizes[stepIndex];
+//        }
 
         turretPID.setPIDF(P, 0, D, 0);
 
@@ -216,10 +220,22 @@ public class DebugREDChassis extends OpMode {
         boolean intakeByTrigger = gamepad1.left_trigger > 0.1;
         boolean intakeByA = gamepad1.a && Math.abs(error) < 250;
 
+        if (intakeByA || gamepad1.b) {
+            transferPower = 1;
+        } else {
+            transferPower =0;
+        }
         if (intakeByTrigger || intakeByA) {
-            intake.setPower(1);
+            intakePower = 1;
+        } else {
+            intakePower = 0;
+        }
+        if (intakeByTrigger || intakeByA || gamepad1.b) {
+            intake.setPower(intakePower);
+            transferServo.setPower(transferPower);
         } else {
             intake.setPower(0);
+            transferServo.setPower(0);
         }
         if (gamepad1.xWasPressed()) { //Shooter
             a++;
@@ -231,10 +247,9 @@ public class DebugREDChassis extends OpMode {
             shooter1.setVelocity(0);
             shooter2.setVelocity(0);
         }
-
         telemetry.addData("P","%.5f (D-Pad U/D)",P);
         telemetry.addData("D","%.5f (D-Pad L/R)",D);
-        telemetry.addData("Step Size","%.4f",stepSizes[stepIndex]);
+//        telemetry.addData("Step Size","%.4f",stepSizes[stepIndex]);
         telemetry.addLine("B - StepSize Switch");
         telemetry.addData("X LL", camX);
         telemetry.addData("Y LL", camY);
