@@ -55,6 +55,9 @@ public class Robot {
     private final Deadline imuTimer;
     private int imuInitCount = 0;
 
+    // TeleOp drive offset (Heading adjustment for field-centric)
+    private double driveOffset = -1.5708;
+
     /**
      * Creates a new Robot with all subsystems.
      *
@@ -258,6 +261,19 @@ public class Robot {
     }
 
     /**
+     * Sets the alliance to adjust drive orientation.
+     *
+     * @param isBlue True if Blue Alliance, False if Red Alliance
+     */
+    public void setAlliance(boolean isBlue) {
+        if (isBlue) {
+            driveOffset = -1.5708;
+        } else {
+            driveOffset = 1.5708;
+        }
+    }
+
+    /**
      * Start teleop driving mode.
      */
     public void startTeleOpDrive() {
@@ -272,6 +288,6 @@ public class Robot {
      * @param rotate Rotation input
      */
     public void setTeleOpDrive(double forward, double strafe, double rotate) {
-        follower.setTeleOpDrive(forward, strafe, rotate, false, 1.5708);
+        follower.setTeleOpDrive(forward, strafe, rotate, false, driveOffset);
     }
 }

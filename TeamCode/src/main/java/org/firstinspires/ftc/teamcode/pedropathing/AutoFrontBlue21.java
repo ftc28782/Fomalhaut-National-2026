@@ -9,8 +9,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.pedropathing.util.Timer;
 
-@Autonomous(name = "IGNORE ESSE AUTONOMO")
-public class Auto21 extends OpMode {
+@Autonomous(name = "IGNORE ESSE AUTONOMO21")
+public class AutoFrontBlue21 extends OpMode {
 
     public void statePathUpdate() {
         switch (pathState) {

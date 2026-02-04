@@ -12,20 +12,27 @@ import org.firstinspires.ftc.teamcode.commands.ShootCommand;
 import org.firstinspires.ftc.teamcode.commands.TurretTrackCommand;
 
 /**
- * Command-based TeleOp for Red Alliance.
- * Functionally equivalent to the original DebugREDChassis.
+ * Command-based TeleOp for Blue Alliance.
+ * Functionally equivalent to the original DebugLLChassis.
  */
-@TeleOp(name = "Red Alliance Teleop (Commands)")
+@TeleOp(name = "Blue Alliance Teleop (Commands)")
 public class RedAllianceTeleOp extends CommandOpMode {
 
     private Robot robot;
     private GamepadEx driver;
+
+    // Blue goal coordinates
+    private static final double BLUE_GOAL_X = -66;
+    private static final double BLUE_GOAL_Y = 66;
 
     @Override
     public void initialize() {
         // Initialize robot and gamepad
         robot = new Robot(hardwareMap);
         driver = new GamepadEx(gamepad1);
+
+        // Set blue goal coordinates
+        robot.setGoal(BLUE_GOAL_X, BLUE_GOAL_Y);
 
         // Start teleop driving
         robot.startTeleOpDrive();
