@@ -21,7 +21,7 @@ public class FlywheelSubsystem extends SubsystemBase {
     public static final double TICKS_PER_REV = 28;
 
     // PIDF coefficients for shooter motors
-    public static final PIDFCoefficients SHOOTER_PIDF = new PIDFCoefficients(7, 0, 0, 14.2);
+    public static final PIDFCoefficients SHOOTER_PIDF = new PIDFCoefficients(7, 0, 0, 14.7);
     private double targetVelocityRPM = 3200;
     private double hoodPosition = 1;
     private boolean isRunning = false;
@@ -65,20 +65,11 @@ public class FlywheelSubsystem extends SubsystemBase {
      * @param distance Distance to goal in inches
      */
     public void setVelocityForDistance(double distance) {
-        double rpm = 1364.45 + 21.20203*distance - 0.03188598*Math.pow(distance, 2);
+        double rpm = (1364.45+150) + 21.20203*distance - 0.03188598*Math.pow(distance, 2);
         targetVelocityRPM = rpm;
         if (isRunning) {
             setVelocityRPM(rpm);
         }
-    }
-
-    /**
-     * Calculate target velocity for a given distance without setting it.
-     * @param distance Distance to goal in inches
-     * @return Calculated velocity in RPM
-     */
-    public double calculateVelocityForDistance(double distance) {
-        return 1364.45 + 21.20203*distance - 0.03188598*Math.pow(distance, 2);
     }
 
     /**

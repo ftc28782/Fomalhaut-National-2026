@@ -210,8 +210,8 @@ public class DebugREDChassis extends OpMode {
         TargetVelocity = 1364.45 + 21.20203*distance - 0.03188598*Math.pow(distance, 2);
         double shooter_power = (TargetVelocity * TicksPerRev / 60);
 
-        double Shooter1Vel = (shooter1.getVelocity() * 60 / TicksPerRev);
-        double Shooter2Vel = (shooter2.getVelocity() * 60 / TicksPerRev);
+        double Shooter1Vel = (shooter1.getVelocity() * TicksPerRev / 60);
+        double Shooter2Vel = (shooter2.getVelocity() * TicksPerRev / 60);
         double CurrentVelocity = (Shooter1Vel + Shooter2Vel) / 2;
         double error = TargetVelocity - CurrentVelocity;
 

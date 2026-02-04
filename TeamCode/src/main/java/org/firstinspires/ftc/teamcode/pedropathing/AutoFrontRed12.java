@@ -10,14 +10,12 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.pedropathing.util.Timer;
 
 @Autonomous(name = "IGNORE ESSE AUTONOMO12")
-public class AutoFrontBlue12 extends OpMode {
+public class AutoFrontRed12 extends OpMode {
 
     Follower follower;
     private Timer pathTimer, opModeTimer;
     public int pathState = 0;
     private boolean stateInit, arrived = false;
-    private static double StartX = 30.3;
-    private static double StartY = 132.5;
     private static String Phrase = "Nada";
     private Paths paths;
     public void statePathUpdate() {
@@ -132,7 +130,7 @@ public class AutoFrontBlue12 extends OpMode {
         pathTimer = new Timer();
         opModeTimer = new Timer();
         follower = Constants.createFollower(hardwareMap);
-        follower.setPose(new Pose(StartX, StartY, Math.toRadians(180)));
+        follower.setPose(new Pose(104.104, 136.824, Math.toRadians(270)));
         paths = new Paths(follower);
     }
 

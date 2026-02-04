@@ -42,6 +42,8 @@ public class Robot {
     // Vision and localization state
     private double camX = 0;
     private double camY = 0;
+    // TeleOp drive offset (Heading adjustment for field-centric)
+    private double driveOffset = -1.5708;
     private boolean hasVision = false;
     private double fusedX = 0;
     private double fusedY = 0;
@@ -49,14 +51,11 @@ public class Robot {
     private double angleToGoal = 0;
 
     // Alpha filter constant for vision fusion
-    private double alphaXY = 0.2;
+    private double alphaXY = 0.08;
 
     // IMU initialization delay
     private final Deadline imuTimer;
     private int imuInitCount = 0;
-
-    // TeleOp drive offset (Heading adjustment for field-centric)
-    private double driveOffset = -1.5708;
 
     /**
      * Creates a new Robot with all subsystems.
@@ -86,6 +85,7 @@ public class Robot {
         // Initialize Limelight
         limelight = hardwareMap.get(Limelight3A.class, "limelightTurret");
         limelight.pipelineSwitch(0);
+        limelight.setPollRateHz(100);
         limelight.start();
     }
 
@@ -250,6 +250,13 @@ public class Robot {
         this.goalX = x;
         this.goalY = y;
     }
+    public void setAlliance(boolean isBlue) {
+        if (isBlue) {
+            driveOffset = -1.5708;
+        } else {
+            driveOffset = 1.5708;
+        }
+    }
 
     /**
      * Set the alpha filter constant for vision fusion.
@@ -258,19 +265,6 @@ public class Robot {
      */
     public void setAlphaXY(double alpha) {
         this.alphaXY = alpha;
-    }
-
-    /**
-     * Sets the alliance to adjust drive orientation.
-     *
-     * @param isBlue True if Blue Alliance, False if Red Alliance
-     */
-    public void setAlliance(boolean isBlue) {
-        if (isBlue) {
-            driveOffset = -1.5708;
-        } else {
-            driveOffset = 1.5708;
-        }
     }
 
     /**

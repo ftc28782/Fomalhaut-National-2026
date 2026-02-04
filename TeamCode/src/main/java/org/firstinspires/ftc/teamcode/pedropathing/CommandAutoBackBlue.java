@@ -51,7 +51,7 @@ public class CommandAutoBackBlue extends CommandOpMode {
                 new SequentialCommandGroup(
                         // Start flywheel and drive to first shot position
                         new ParallelCommandGroup(
-                                new FlywheelRunCommand(robot.flywheel, 3500),
+                                new FlywheelRunCommand(robot.flywheel, robot::getDistanceToGoal),
                                 new FollowPathCommand(robot.follower, paths.toShot1)
                         ),
 
@@ -61,7 +61,7 @@ public class CommandAutoBackBlue extends CommandOpMode {
 
                         // Drive to intake position while keeping flywheel running
                         new ParallelCommandGroup(
-                                new FlywheelRunCommand(robot.flywheel, 3500),
+                                new FlywheelRunCommand(robot.flywheel, robot::getDistanceToGoal),
                                 new SequentialCommandGroup(
                                         new FollowPathCommand(robot.follower, paths.toIntake1),
                                         new IntakeForTimeCommand(robot.intake, 1.5)
@@ -70,7 +70,7 @@ public class CommandAutoBackBlue extends CommandOpMode {
 
                         // Return to shot position
                         new ParallelCommandGroup(
-                                new FlywheelRunCommand(robot.flywheel, 3500),
+                                new FlywheelRunCommand(robot.flywheel, robot::getDistanceToGoal),
                                 new FollowPathCommand(robot.follower, paths.toShot2)
                         ),
 

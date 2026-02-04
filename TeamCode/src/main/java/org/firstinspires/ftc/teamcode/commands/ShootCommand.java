@@ -39,7 +39,7 @@ public class ShootCommand extends CommandBase {
      */
     public ShootCommand(IntakeSubsystem intake, TransferSubsystem transfer,
                         FlywheelSubsystem flywheel) {
-        this(intake, transfer, flywheel, 250);
+        this(intake, transfer, flywheel, 300);
     }
 
     @Override

@@ -15,8 +15,8 @@ import org.firstinspires.ftc.teamcode.commands.TurretTrackCommand;
  * Command-based TeleOp for Blue Alliance.
  * Functionally equivalent to the original DebugLLChassis.
  */
-@TeleOp(name = "Blue Alliance Teleop (Commands)")
-public class RedAllianceTeleOp extends CommandOpMode {
+@TeleOp(name = "Red Alliance Teleop (Commands)")
+public class DebugRedAllianceTeleOp extends CommandOpMode {
 
     private Robot robot;
     private GamepadEx driver;
@@ -31,6 +31,7 @@ public class RedAllianceTeleOp extends CommandOpMode {
         robot = new Robot(hardwareMap);
         driver = new GamepadEx(gamepad1);
 
+        robot.setAlliance(false);
         // Set blue goal coordinates
         robot.setGoal(BLUE_GOAL_X, BLUE_GOAL_Y);
 

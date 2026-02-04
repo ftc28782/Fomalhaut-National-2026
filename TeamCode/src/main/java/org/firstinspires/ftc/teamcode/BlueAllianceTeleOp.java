@@ -69,8 +69,7 @@ public class BlueAllianceTeleOp extends CommandOpMode {
         robot.setTeleOpDrive(
                 -gamepad1.left_stick_y,
                 -gamepad1.left_stick_x,
-                -gamepad1.right_stick_x
-        );
+                -gamepad1.right_stick_x);
 
         boolean triggerIntake = gamepad1.left_trigger > 0.1;
         boolean shooting = gamepad1.a && robot.flywheel.isAtTargetVelocity(250);
