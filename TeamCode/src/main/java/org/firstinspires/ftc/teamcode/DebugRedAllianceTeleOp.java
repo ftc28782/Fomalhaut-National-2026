@@ -31,7 +31,7 @@ public class DebugRedAllianceTeleOp extends CommandOpMode {
         robot = new Robot(hardwareMap);
         driver = new GamepadEx(gamepad1);
 
-        robot.setAlliance(false);
+        robot.setAlliance(Robot.Alliance.RED);
         // Set blue goal coordinates
         robot.setGoal(BLUE_GOAL_X, BLUE_GOAL_Y);
 

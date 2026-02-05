@@ -1,24 +1,26 @@
+// java
 package org.firstinspires.ftc.teamcode.commands;
 
 import com.seattlesolvers.solverslib.command.CommandBase;
 import org.firstinspires.ftc.teamcode.subsystems.FlywheelSubsystem;
-import java.util.function.DoubleSupplier;
+import org.firstinspires.ftc.teamcode.Robot;
 
 /**
- * Command to run the flywheel and dynamically update RPM based on distance.
+ * Command to run the flywheel and dynamically update RPM based on Robot#getDistanceToGoal().
+ * This version sempre se baseia em robot.getDistanceToGoal().
  */
 public class FlywheelRunCommand extends CommandBase {
 
     private final FlywheelSubsystem flywheel;
-    private final DoubleSupplier distanceSupplier;
+    private final Robot robot;
 
     /**
      * @param flywheel The flywheel subsystem
-     * @param distanceSupplier Lambda to get the current distance to goal
+     * @param robot The robot instance; used to call getDistanceToGoal()
      */
-    public FlywheelRunCommand(FlywheelSubsystem flywheel, DoubleSupplier distanceSupplier) {
+    public FlywheelRunCommand(FlywheelSubsystem flywheel, Robot robot) {
         this.flywheel = flywheel;
-        this.distanceSupplier = distanceSupplier;
+        this.robot = robot;
         addRequirements(flywheel);
     }
 
@@ -29,15 +31,12 @@ public class FlywheelRunCommand extends CommandBase {
 
     @Override
     public void execute() {
-        // Atualiza o RPM conforme a distância muda
-        flywheel.setVelocityForDistance(distanceSupplier.getAsDouble());
+        // Sempre usa robot.getDistanceToGoal() em tempo de execução
+        flywheel.setVelocityForDistance(robot.getDistanceToGoal());
     }
 
     @Override
     public void end(boolean interrupted) {
-        // Se quisermos que ele continue girando mesmo após o comando acabar
-        // (ex: durante a transição de um caminho para o chute), 
-        // comentamos o flywheel.stop() ou tratamos o interrupted.
         if (!interrupted) {
             flywheel.stop();
         }

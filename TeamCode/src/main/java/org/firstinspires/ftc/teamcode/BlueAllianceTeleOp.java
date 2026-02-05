@@ -31,7 +31,7 @@ public class BlueAllianceTeleOp extends CommandOpMode {
         driver = new GamepadEx(gamepad1);
 
         // Set alliance and goal
-        robot.setAlliance(true);
+        robot.setAlliance(Robot.Alliance.BLUE);
         robot.setGoal(BLUE_GOAL_X, BLUE_GOAL_Y);
 
         // Start teleop driving

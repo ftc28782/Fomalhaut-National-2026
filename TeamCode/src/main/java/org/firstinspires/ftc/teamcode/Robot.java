@@ -24,6 +24,10 @@ import java.util.concurrent.TimeUnit;
  */
 public class Robot {
 
+    public enum Alliance {
+        BLUE, RED
+    }
+
     // Subsystems
     public final TurretSubsystem turret;
     public final TransferSubsystem transfer;
@@ -35,7 +39,7 @@ public class Robot {
     public final IMU imu;
     public final Limelight3A limelight;
 
-    // Goal coordinates (Blue goal by default)
+    // Goal coordinates
     public double goalX = -66;
     public double goalY = 66;
 
@@ -250,11 +254,19 @@ public class Robot {
         this.goalX = x;
         this.goalY = y;
     }
-    public void setAlliance(boolean isBlue) {
-        if (isBlue) {
+
+    /**
+     * Sets the alliance to adjust drive orientation and goal position.
+     *
+     * @param alliance The alliance color
+     */
+    public void setAlliance(Alliance alliance) {
+        if (alliance == Alliance.BLUE) {
             driveOffset = -1.5708;
+            setGoal(-66, 66);
         } else {
             driveOffset = 1.5708;
+            setGoal(-66, -66);
         }
     }
 
