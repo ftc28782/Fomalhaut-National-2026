@@ -44,7 +44,7 @@ public class TurretSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         // Update current angle from encoder
-        currentAngle = encoderMotor.getCurrentPosition() / TICKS_TO_DEGREES;
+        currentAngle = (encoderMotor.getCurrentPosition() / TICKS_TO_DEGREES);
     }
 
     /**

@@ -1,14 +1,19 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.ftc.PoseConverter;
+import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.seattlesolvers.solverslib.geometry.Pose2d;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
@@ -40,8 +45,8 @@ public class Robot {
     public final Limelight3A limelight;
 
     // Goal coordinates
-    public double goalX = -66;
-    public double goalY = 66;
+    public double goalX;
+    public double goalY;
 
     // Vision and localization state
     private double camX = 0;
@@ -49,8 +54,6 @@ public class Robot {
     // TeleOp drive offset (Heading adjustment for field-centric)
     private double driveOffset = -1.5708;
     private boolean hasVision = false;
-    private double fusedX = 0;
-    private double fusedY = 0;
     private double distanceToGoal = 0;
     private double angleToGoal = 0;
 
@@ -60,6 +63,7 @@ public class Robot {
     // IMU initialization delay
     private final Deadline imuTimer;
     private int imuInitCount = 0;
+    Pose LLPose;
 
     /**
      * Creates a new Robot with all subsystems.
@@ -84,7 +88,7 @@ public class Robot {
 
         // Initialize Pinpoint/Follower
         follower = Constants.createFollower(hardwareMap);
-        follower.setPose(new Pose(0, 0, 0));
+        follower.setPose(new Pose(72, 72, 0));
 
         // Initialize Limelight
         limelight = hardwareMap.get(Limelight3A.class, "limelightTurret");
@@ -127,9 +131,6 @@ public class Robot {
         // Update limelight orientation
         limelight.updateRobotOrientation(getIMUYawDegrees());
 
-        // Process vision
-        updateVision();
-
         // Calculate distance and angle to goal
         calculateGoalMetrics();
     }
@@ -137,41 +138,46 @@ public class Robot {
     /**
      * Update vision data from Limelight.
      */
-    private void updateVision() {
-        hasVision = false;
+    public void updateVision() {
 
+        hasVision = false;
         LLResult result = limelight.getLatestResult();
         if (result != null && result.isValid()) {
             Pose3D camPose3D = result.getBotpose_MT2();
             if (camPose3D != null) {
-                camX = camPose3D.getPosition().x * 39.3701; // Convert to inches
+                camX = camPose3D.getPosition().x * 39.3701;
                 camY = camPose3D.getPosition().y * 39.3701;
-                hasVision = true;
+                    LLPose = new Pose(camX, camY, (imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) - Math.toRadians(90)));
+                    LLPose.getAsCoordinateSystem(PedroCoordinates.INSTANCE);
+                    double errorVision = Math.hypot(LLPose.getX() - follower.getPose().getX(), LLPose.getY() - follower.getPose().getY());
+                if (errorVision > 3) {
+                    follower.setPose(LLPose);
+                    hasVision = true;
+                }
             }
         }
-
-        // Fuse vision with odometry
         Pose followerPose = follower.getPose();
-        double odoX = followerPose.getX();
-        double odoY = followerPose.getY();
-
-        fusedX = odoX;
-        fusedY = odoY;
-
-        double errorVision = Math.hypot(camX - odoX, camY - odoY);
-        if (hasVision && errorVision > 3) {
-            fusedX = odoX * (1 - alphaXY) + camX * alphaXY;
-            fusedY = odoY * (1 - alphaXY) + camY * alphaXY;
-            follower.setPose(new Pose(fusedX, fusedY, imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS)));
-        }
+        followerPose.getAsCoordinateSystem(PedroCoordinates.INSTANCE);
+//        double odoX = followerPose.getX();
+//        double odoY = followerPose.getY();
+//
+//        fusedX = odoX;
+//        fusedY = odoY;
+//
+//        double errorVision = Math.hypot(camX - odoX, camY - odoY);
+//        if (hasVision && errorVision > 3) {
+//            fusedX = odoX * (1 - alphaXY) + camX * alphaXY;
+//            fusedY = odoY * (1 - alphaXY) + camY * alphaXY;
+//            follower.setPose(new Pose(fusedX, fusedY, imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS)));
+//        }
     }
 
     /**
      * Calculate distance and angle to the goal.
      */
     private void calculateGoalMetrics() {
-        double dx = goalX - fusedX;
-        double dy = goalY - fusedY;
+        double dx = goalX - follower.getPose().getX();
+        double dy = goalY - follower.getPose().getX();
 
         distanceToGoal = Math.hypot(dx, dy);
 
@@ -182,10 +188,25 @@ public class Robot {
     }
 
     /**
+     * Sets the alliance to adjust drive orientation and goal position.
+     *
+     * @param alliance The alliance color
+     */
+    public void setAlliance(Alliance alliance) {
+        if (alliance == Alliance.BLUE) {
+            driveOffset = -3.1415926535897932;
+            setGoal(8, 136);
+        } else {
+            driveOffset = 0;
+            setGoal(136, 136);
+        }
+    }
+
+    /**
      * Get IMU yaw in degrees.
      */
     public double getIMUYawDegrees() {
-        return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+        return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + 90; //rotacionado em direção ao goal red
     }
 
     /**
@@ -196,17 +217,17 @@ public class Robot {
     }
 
     /**
-     * Get the fused X position.
+     * Get the X position.
      */
-    public double getFusedX() {
-        return fusedX;
+    public double getX() {
+        return follower.getPose().getX();
     }
 
     /**
-     * Get the fused Y position.
+     * Get the Y position.
      */
-    public double getFusedY() {
-        return fusedY;
+    public double getY() {
+        return follower.getPose().getY();
     }
 
     /**
@@ -253,21 +274,6 @@ public class Robot {
     public void setGoal(double x, double y) {
         this.goalX = x;
         this.goalY = y;
-    }
-
-    /**
-     * Sets the alliance to adjust drive orientation and goal position.
-     *
-     * @param alliance The alliance color
-     */
-    public void setAlliance(Alliance alliance) {
-        if (alliance == Alliance.BLUE) {
-            driveOffset = -1.5708;
-            setGoal(136, 136);
-        } else {
-            driveOffset = 1.5708;
-            setGoal(-66, -66);
-        }
     }
 
     /**

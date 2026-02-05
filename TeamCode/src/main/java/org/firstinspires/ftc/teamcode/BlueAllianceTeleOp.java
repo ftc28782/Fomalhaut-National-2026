@@ -21,8 +21,6 @@ public class BlueAllianceTeleOp extends CommandOpMode {
     private GamepadEx driver;
 
     // Blue goal coordinates
-    private static final double BLUE_GOAL_X = -66;
-    private static final double BLUE_GOAL_Y = -66;
 
     @Override
     public void initialize() {
@@ -32,7 +30,6 @@ public class BlueAllianceTeleOp extends CommandOpMode {
 
         // Set alliance and goal
         robot.setAlliance(Robot.Alliance.BLUE);
-        robot.setGoal(BLUE_GOAL_X, BLUE_GOAL_Y);
 
         // Start teleop driving
         robot.startTeleOpDrive();
@@ -45,8 +42,10 @@ public class BlueAllianceTeleOp extends CommandOpMode {
                         () -> gamepad1.right_stick_x
                 )
         );
+                // Usando SolversLib GamepadEx
+        driver.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER)
+                .whenPressed(() -> {robot.updateVision();});
 
-        // Button bindings
         driver.getGamepadButton(GamepadKeys.Button.X)
                 .whenPressed(new FlywheelToggleCommand(robot.flywheel));
 
@@ -89,8 +88,8 @@ public class BlueAllianceTeleOp extends CommandOpMode {
         telemetry.addData("Alliance", "BLUE");
         telemetry.addData("X LL", robot.getCamX());
         telemetry.addData("Y LL", robot.getCamY());
-        telemetry.addData("FusedX", robot.getFusedX());
-        telemetry.addData("FusedY", robot.getFusedY());
+        telemetry.addData("X", robot.getX());
+        telemetry.addData("Y", robot.getY());
         telemetry.addData("Distance", robot.getDistanceToGoal());
         telemetry.addData("Shooter Error", robot.flywheel.getVelocityError());
         telemetry.addData("Target Velocity", robot.flywheel.getTargetVelocityRPM());

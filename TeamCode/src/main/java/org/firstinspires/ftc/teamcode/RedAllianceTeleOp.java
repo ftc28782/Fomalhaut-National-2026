@@ -16,14 +16,12 @@ import org.firstinspires.ftc.teamcode.commands.TurretTrackCommand;
  * Functionally equivalent to the original DebugLLChassis.
  */
 @TeleOp(name = "Red Alliance Teleop (Commands)")
-public class DebugRedAllianceTeleOp extends CommandOpMode {
+public class RedAllianceTeleOp extends CommandOpMode {
 
     private Robot robot;
     private GamepadEx driver;
 
     // Blue goal coordinates
-    private static final double BLUE_GOAL_X = -66;
-    private static final double BLUE_GOAL_Y = 66;
 
     @Override
     public void initialize() {
@@ -33,7 +31,6 @@ public class DebugRedAllianceTeleOp extends CommandOpMode {
 
         robot.setAlliance(Robot.Alliance.RED);
         // Set blue goal coordinates
-        robot.setGoal(BLUE_GOAL_X, BLUE_GOAL_Y);
 
         // Start teleop driving
         robot.startTeleOpDrive();
@@ -104,8 +101,8 @@ public class DebugRedAllianceTeleOp extends CommandOpMode {
     private void updateTelemetry() {
         telemetry.addData("X LL", robot.getCamX());
         telemetry.addData("Y LL", robot.getCamY());
-        telemetry.addData("FusedX", robot.getFusedX());
-        telemetry.addData("FusedY", robot.getFusedY());
+        telemetry.addData("X", robot.getX());
+        telemetry.addData("uY", robot.getY());
         telemetry.addData("Distance", robot.getDistanceToGoal());
         telemetry.addData("Shooter Error", robot.flywheel.getVelocityError());
         telemetry.addData("Target Velocity", robot.flywheel.getTargetVelocityRPM());
