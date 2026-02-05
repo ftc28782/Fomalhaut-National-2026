@@ -38,7 +38,7 @@ public class DebugREDChassis extends OpMode {
     private double hood_position = 1;
     GamepadEx driver;
     CRServo servo1, servo2, transferServo = null;
-    DcMotorEx shooter1, shooter2, intake= null;
+    DcMotorEx shooter1, shooter2, intake = null;
     Servo hoodservo = null;
     private double servoPower;
     private final double GOAL_BLUE_X = -66, GOAL_BLUE_Y = 66;
@@ -48,18 +48,19 @@ public class DebugREDChassis extends OpMode {
     private double encoder;
     private double IMUDegress;
     PIDFController turretPID;
-    private double P = 0.014;
-    private double D = 0.0015;
+    private double P = 16;
+    private double F = 15.5;
     public int stepIndex = 1;
     private IMU imu;
     private double a;
     private double transferPower;
-
     private double intakePower;
+    PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
+
     public void init() {
 
         //TURRET PID
-        turretPID = new PIDFController(P, 0.0, D, 0);
+        turretPID = new PIDFController(0.014, 0.0, 0.0015, 0);
         turretPID.setTolerance(0.5);
         turretPID.setSetPoint(0);
 
@@ -79,7 +80,7 @@ public class DebugREDChassis extends OpMode {
 
         //PINPOINT
         follower = Constants.createFollower(hardwareMap);
-        follower.setPose(new Pose(0,0,0));
+        follower.setPose(new Pose(0, 0, 0));
 
         //TELEOP
         driver = new GamepadEx(gamepad1);
@@ -101,11 +102,12 @@ public class DebugREDChassis extends OpMode {
         shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter1.setDirection(DcMotorSimple.Direction.FORWARD);
         shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
-        PIDFCoefficients pidfCoefficients = new PIDFCoefficients(7,0,0,14.2);
+        pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
         shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
     }
-    public void loop(){
+
+    public void loop() {
 
         // UPDATE DRIVER INPUTS
         driver.readButtons(); // Process WasPressed events
@@ -122,7 +124,7 @@ public class DebugREDChassis extends OpMode {
         }
         IMUDegress = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         follower.update();
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false,1.5708);
+        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false, 1.5708);
 
         // PINPOINT
         Pose followerPose = follower.getPose();
@@ -157,7 +159,7 @@ public class DebugREDChassis extends OpMode {
         if (hasVision && errorVision > 3) {
             fusedX = odoX * (1 - alphaXY) + camX * alphaXY;
             fusedY = odoY * (1 - alphaXY) + camY * alphaXY;
-        follower.setPose(new Pose(fusedX,fusedY,(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS))));
+            follower.setPose(new Pose(fusedX, fusedY, (imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS))));
         }
         double dx = GOAL_BLUE_X - fusedX;
         double dy = GOAL_BLUE_Y - fusedY;
@@ -182,84 +184,111 @@ public class DebugREDChassis extends OpMode {
         servo1.setPower(servoPower);
         servo2.setPower(servoPower);
 
-//        //PIDF CALIBRATOR
-//        double[] stepSizes = {10,1,0.1,0.01,0.001,0.0001};
-//        if (gamepad1.bWasPressed()) {
-//            stepIndex = (stepIndex + 1) % stepSizes.length;
-//        }
-//
-//        if (gamepad1.dpadLeftWasPressed()) {
-//            D += stepSizes[stepIndex];
-//        }
-//        if (gamepad1.dpadRightWasPressed()) {
-//            D -= stepSizes[stepIndex];
-//        }
-//        if (gamepad1.dpadUpWasPressed()) {
-//            P += stepSizes[stepIndex];
-//        }
-//        if (gamepad1.dpadDownWasPressed()) {
-//            P -= stepSizes[stepIndex];
-//        }
+        //PIDF CALIBRATOR
+        double[] stepSizes = {10, 1, 0.1, 0.01, 0.001, 0.0001};
+        if (gamepad1.bWasPressed()) {
+            stepIndex = (stepIndex + 1) % stepSizes.length;
+        }
 
-        turretPID.setPIDF(P, 0, D, 0);
+        if (gamepad1.dpadLeftWasPressed()) {
+            F += stepSizes[stepIndex];
+        }
+        if (gamepad1.dpadRightWasPressed()) {
+            F -= stepSizes[stepIndex];
+        }
+        if (gamepad1.dpadUpWasPressed()) {
+            P += stepSizes[stepIndex];
+        }
+        if (gamepad1.dpadDownWasPressed()) {
+            P -= stepSizes[stepIndex];
+        }
+
+        pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
+        shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
+        shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
 
         //SHOOTER AND HOOD POSITION
 //        hood_position = -0.8909748 + 0.0521592 * distance - 0.0006677889 * Math.pow(distance, 2) + 0.000003639036 * Math.pow(distance, 3) - 7.141361e-9 * Math.pow(distance, 4);
         hoodservo.setPosition(hood_position); //Set Hood position
 
-        TargetVelocity = 1364.45 + 21.20203*distance - 0.03188598*Math.pow(distance, 2);
-        double shooter_power = (TargetVelocity * TicksPerRev / 60);
+        TargetVelocity = 1364.45 + 21.20203 * distance - 0.03188598 * Math.pow(distance, 2);
+//        if (gamepad1.leftBumperWasPressed()) {
+//            TargetVelocity = TargetVelocity - 100;
+//        }
+//        if (gamepad1.rightBumperWasPressed()) {
+//            TargetVelocity = TargetVelocity + 100;
+//    }
 
-        double Shooter1Vel = (shooter1.getVelocity() * TicksPerRev / 60);
-        double Shooter2Vel = (shooter2.getVelocity() * TicksPerRev / 60);
-        double CurrentVelocity = (Shooter1Vel + Shooter2Vel) / 2;
-        double error = TargetVelocity - CurrentVelocity;
+    double shooter_power = (TargetVelocity * TicksPerRev / 60);
 
-        boolean intakeByTrigger = gamepad1.left_trigger > 0.1;
-        boolean intakeByA = gamepad1.a && Math.abs(error) < 250;
+    double Shooter1Vel = (shooter1.getVelocity() * 60 / TicksPerRev);
+    double Shooter2Vel = (shooter2.getVelocity() * 60 / TicksPerRev);
+    double CurrentVelocity = (Shooter1Vel + Shooter2Vel) / 2;
+    double error = TargetVelocity - CurrentVelocity;
 
-        if (intakeByA || gamepad1.b) {
-            transferPower = 1;
-        } else {
-            transferPower =0;
-        }
-        if (intakeByTrigger || intakeByA) {
-            intakePower = 1;
-        } else {
-            intakePower = 0;
-        }
-        if (intakeByTrigger || intakeByA || gamepad1.b) {
-            intake.setPower(intakePower);
-            transferServo.setPower(transferPower);
-        } else {
-            intake.setPower(0);
-            transferServo.setPower(0);
-        }
-        if (gamepad1.xWasPressed()) { //Shooter
-            a++;
-        }
-        if (a % 2 == 1) {
-            shooter1.setVelocity(shooter_power);
-            shooter2.setVelocity(shooter_power);
-        } else {
-            shooter1.setVelocity(0);
-            shooter2.setVelocity(0);
-        }
-        telemetry.addData("P","%.5f (D-Pad U/D)",P);
-        telemetry.addData("D","%.5f (D-Pad L/R)",D);
-//        telemetry.addData("Step Size","%.4f",stepSizes[stepIndex]);
-        telemetry.addLine("B - StepSize Switch");
-        telemetry.addData("X LL", camX);
-        telemetry.addData("Y LL", camY);
-        telemetry.addData("FusedX", fusedX);
-        telemetry.addData("FusedY", fusedY);
-        telemetry.addData("Distance", distance);
-        telemetry.addData("Shooter Error", error);
-        telemetry.addData("Target Velocity", TargetVelocity);
-        telemetry.addData("IMUAngle", IMUDegress);
-        telemetry.addData("Turret Angle", turretAngle);
-        telemetry.addData("Angle to Goal", angleToGoal);
-        telemetry.addData("Hood", hood_position);
-        telemetry.update();
+    boolean intakeByTrigger = gamepad1.left_trigger > 0.1;
+    boolean intakeByA = gamepad1.a && Math.abs(error) < 250;
+
+        if(intakeByA ||gamepad1.b)
+
+    {
+        transferPower = 1;
+    } else
+
+    {
+        transferPower = 0;
     }
+        if(intakeByTrigger ||intakeByA)
+
+    {
+        intakePower = 1;
+    } else
+
+    {
+        intakePower = 0;
+    }
+        if(intakeByTrigger ||intakeByA ||gamepad1.b)
+
+    {
+        intake.setPower(intakePower);
+        transferServo.setPower(transferPower);
+    } else
+
+    {
+        intake.setPower(0);
+        transferServo.setPower(0);
+    }
+        if(gamepad1.xWasPressed())
+
+    { //Shooter
+        a++;
+    }
+        if(a %2==1)
+
+    {
+        shooter1.setVelocity(shooter_power);
+        shooter2.setVelocity(shooter_power);
+    } else
+
+    {
+        shooter1.setVelocity(0);
+        shooter2.setVelocity(0);
+    }
+        telemetry.addData("P","%.5f (D-Pad U/D)",P);
+        telemetry.addData("F","%.5f (D-Pad L/R)",F);
+        telemetry.addData("Step Size","%.4f",stepSizes[stepIndex]);
+        telemetry.addLine("B - StepSize Switch");
+        telemetry.addData("X LL",camX);
+        telemetry.addData("Y LL",camY);
+        telemetry.addData("FusedX",fusedX);
+        telemetry.addData("FusedY",fusedY);
+        telemetry.addData("Distance",distance);
+        telemetry.addData("Shooter Error",error);
+        telemetry.addData("Target Velocity",TargetVelocity);
+        telemetry.addData("IMUAngle",IMUDegress);
+        telemetry.addData("Turret Angle",turretAngle);
+        telemetry.addData("Angle to Goal",angleToGoal);
+        telemetry.addData("Hood",hood_position);
+        telemetry.update();
+}
 }

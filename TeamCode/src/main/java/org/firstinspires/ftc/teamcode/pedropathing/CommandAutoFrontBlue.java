@@ -22,6 +22,9 @@ import org.firstinspires.ftc.teamcode.commands.TurretTrackCommand;
 @Autonomous(name = "Command Auto Front Blue")
 public class CommandAutoFrontBlue extends CommandOpMode {
 
+    public double goalX = 8.0;   // Perto da parede lateral
+    public double goalY = 136.0; // Perto da meta azul
+
     private Robot robot;
     private AutoPaths paths;
     private IntakeRunCommand intake;
@@ -71,6 +74,7 @@ public class CommandAutoFrontBlue extends CommandOpMode {
         telemetry.addData("Y LL", robot.getCamY());
         telemetry.addData("X", robot.follower.getPose().getX());
         telemetry.addData("Y", robot.follower.getPose().getY());
+        telemetry.addData("error", robot.flywheel.getVelocityError());
         telemetry.addData("Distance to Goal", robot.getDistanceToGoal());
         telemetry.update();
     }
@@ -82,28 +86,18 @@ public class CommandAutoFrontBlue extends CommandOpMode {
                     robot.follower.followPath(paths.toShoot1);
                     stateInit = true;
                 }
-                if (!robot.follower.isBusy() && !arrived) {
-                    arrived = true;
-                    pathTimer.resetTimer();
-                }
-                if (arrived) {
-                    Shoot();
-                }
-                if (!robot.follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 3) {
-                    setPathState(1);
-                    endShoot();
-                }
+                ShootLogic(1);
                 break;
 
             case 1: // Coleta 1 (Intake1)
                 if (!stateInit) {
                     robot.follower.followPath(paths.Intake1);
                     stateInit = true;
-                    enableIntake();
+                    Intake();
                 }
                 if (!robot.follower.isBusy()) {
                     setPathState(2);
-                    disableIntake();
+                    endIntake();
                 }
 
             case 2: // Volta para atirar 2 (toShoot2)
@@ -111,18 +105,18 @@ public class CommandAutoFrontBlue extends CommandOpMode {
                     robot.follower.followPath(paths.toShoot2);
                     stateInit = true;
                 }
-                if (!robot.follower.isBusy()) {
-                    setPathState(3);
-                }
+                ShootLogic(3);
                 break;
 
             case 3: // Coleta 2 (Intake2)
                 if (!stateInit) {
                     robot.follower.followPath(paths.Intake2);
                     stateInit = true;
+                    Intake();
                 }
                 if (!robot.follower.isBusy()) {
                     setPathState(4);
+                    endIntake();
                 }
                 break;
 
@@ -141,18 +135,18 @@ public class CommandAutoFrontBlue extends CommandOpMode {
                     robot.follower.followPath(paths.toShoot3);
                     stateInit = true;
                 }
-                if (!robot.follower.isBusy()) {
-                    setPathState(6);
-                }
+                ShootLogic(6);
                 break;
 
             case 6: // Coleta 3 (Intake3)
                 if (!stateInit) {
                     robot.follower.followPath(paths.Intake3);
                     stateInit = true;
+                    Intake();
                 }
                 if (!robot.follower.isBusy()) {
                     setPathState(7);
+                    endIntake();
                 }
                 break;
 
@@ -161,9 +155,7 @@ public class CommandAutoFrontBlue extends CommandOpMode {
                     robot.follower.followPath(paths.toShoot4);
                     stateInit = true;
                 }
-                if (!robot.follower.isBusy()) {
-                    setPathState(8);
-                }
+                ShootLogic(8);
                 break;
 
             case 8: // Ponto final (EndPoint)
@@ -189,6 +181,23 @@ public class CommandAutoFrontBlue extends CommandOpMode {
     /**
      * Lógica inteligente de tiro: só liga o intake/transfer se a flywheel estiver pronta.
      */
+
+    public void ShootLogic(int newState) {
+        if (!robot.follower.isBusy() && !arrived) {
+            arrived = true;
+            pathTimer.resetTimer();
+        }
+        if (arrived) {
+            Shoot();
+        }
+        if (!robot.follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 3) {
+            endShoot();
+            pathState = newState;
+            stateInit = false;
+            arrived = false;
+            pathTimer.resetTimer();
+        }
+    }
     public void Shoot() {
         if (robot.flywheel.isAtTargetVelocity(250)) {
             robot.intake.setPower(1);
@@ -204,22 +213,11 @@ public class CommandAutoFrontBlue extends CommandOpMode {
         robot.transfer.stop();
     }
 
-    public void enableIntake() {
-        if (intake == null) {
-            intake = new IntakeRunCommand(robot.intake, 1.0); // power = 1.0
-        }
-        if (!intake.isScheduled()) {
-            intake.schedule();
-        }
+    public void Intake() {
+        robot.intake.setPower(1);
     }
-
-    // desliga (chama quando soltar botão)
-    public void disableIntake() {
-        if (intake != null && intake.isScheduled()) {
-            intake.cancel(); // chama end() do comando
-        } else {
-            robot.intake.stop(); // garantia: para o motor mesmo sem comando
-        }
+    public void endIntake() {
+        robot.intake.setPower(0);
     }
 
     /**
@@ -300,7 +298,7 @@ public class CommandAutoFrontBlue extends CommandOpMode {
             Intake3 = robot.follower.pathBuilder().addPath(
                             new BezierCurve(
                                     new Pose(53.827, 89.064),
-                                    new Pose(37.034, 72.206),
+                                    new Pose(73.081, 30.556),
                                     new Pose(10.048, 34.500)
                             )
                     ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))

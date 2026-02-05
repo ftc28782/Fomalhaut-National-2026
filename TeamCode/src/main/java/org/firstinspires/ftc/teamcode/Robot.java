@@ -263,7 +263,7 @@ public class Robot {
     public void setAlliance(Alliance alliance) {
         if (alliance == Alliance.BLUE) {
             driveOffset = -1.5708;
-            setGoal(-66, 66);
+            setGoal(136, 136);
         } else {
             driveOffset = 1.5708;
             setGoal(-66, -66);
