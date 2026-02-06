@@ -15,8 +15,8 @@ public class ShooterPIDFTuner extends OpMode {
     public double HalfSpeed = 2000; //rpm
     public double TicksPerRev = 28;
     double TargetVelocity = HalfSpeed;
-    double F = 14.2;
-    double P = 7;
+    double I = 0;
+    double P = 0;
     double[] stepSizes = {10,1,0.1,0.01,0.001,0.0001};
     int stepIndex = 1;
     @Override
@@ -27,7 +27,7 @@ public class ShooterPIDFTuner extends OpMode {
         shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter1.setDirection(DcMotorSimple.Direction.FORWARD);
         shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
-        PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P,0,0,F);
+        PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P,I,0,0);
         shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         telemetry.addLine("Init Complete");
@@ -45,11 +45,12 @@ public class ShooterPIDFTuner extends OpMode {
             stepIndex = (stepIndex + 1) % stepSizes.length;
         }
 
+
         if (gamepad1.dpadLeftWasPressed()) {
-            F += stepSizes[stepIndex];
+            I += stepSizes[stepIndex];
         }
         if (gamepad1.dpadRightWasPressed()) {
-            F -= stepSizes[stepIndex];
+            I -= stepSizes[stepIndex];
         }
         if (gamepad1.dpadUpWasPressed()) {
             P += stepSizes[stepIndex];
@@ -57,7 +58,7 @@ public class ShooterPIDFTuner extends OpMode {
         if (gamepad1.dpadDownWasPressed()) {
             P -= stepSizes[stepIndex];
         }
-        PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P,0,0,F);
+        PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P,I,0,0);
         shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
 
@@ -74,7 +75,7 @@ public class ShooterPIDFTuner extends OpMode {
         telemetry.addData("Error","%.2f",error);
         telemetry.addLine("------------------------------------------");
         telemetry.addData("P","%.5f (D-Pad U/D)",P);
-        telemetry.addData("F","%.5f (D-Pad L/R)",F);
+        telemetry.addData("I","%.5f (D-Pad L/R)",I);
         telemetry.addData("Step Size","%.4f",stepSizes[stepIndex]);
         telemetry.addLine("B - StepSize Switch");
         telemetry.update();
