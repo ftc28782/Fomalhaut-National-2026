@@ -1,21 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.pedropathing.follower.Follower;
-import com.pedropathing.ftc.InvertedFTCCoordinates;
-import com.pedropathing.ftc.PoseConverter;
 import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.IMU;
-import com.seattlesolvers.solverslib.geometry.Pose2d;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.FlywheelSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
@@ -41,7 +34,6 @@ public class Robot {
 
     // Shared Hardware
     public final Follower follower;
-    public final IMU imu;
     public final Limelight3A limelight;
 
     // Goal coordinates
@@ -59,10 +51,6 @@ public class Robot {
 
     // Alpha filter constant for vision fusion
     private double alphaXY = 0.08;
-
-    // IMU initialization delay
-    private final Deadline imuTimer;
-    private int imuInitCount = 0;
     Pose LLPose;
 
     /**
@@ -76,15 +64,6 @@ public class Robot {
         turret = new TurretSubsystem(hardwareMap, intake.getMotor());
         transfer = new TransferSubsystem(hardwareMap);
         flywheel = new FlywheelSubsystem(hardwareMap);
-
-        // Initialize IMU
-        imu = hardwareMap.get(IMU.class, "imu");
-        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD
-        ));
-        imu.initialize(parameters);
-        imuTimer = new Deadline(500, TimeUnit.MILLISECONDS);
 
         // Initialize Pinpoint/Follower
         follower = Constants.createFollower(hardwareMap);
@@ -112,12 +91,6 @@ public class Robot {
      * Update all robot state. Should be called each loop iteration.
      */
     public void update() {
-        // Handle IMU reset delay
-        if (imuTimer.hasExpired() && imuInitCount < 1) {
-            imu.resetYaw();
-            imuTimer.reset();
-            imuInitCount++;
-        }
 
         // Update subsystems
         turret.periodic();
@@ -129,7 +102,7 @@ public class Robot {
         follower.update();
 
         // Update limelight orientation
-        limelight.updateRobotOrientation(getIMUYawDegrees());
+        limelight.updateRobotOrientation(follower.getHeading());
 
         // Calculate distance and angle to goal
         calculateGoalMetrics();
@@ -145,9 +118,9 @@ public class Robot {
         if (result != null && result.isValid()) {
             Pose3D camPose3D = result.getBotpose_MT2();
             if (camPose3D != null) {
-                camX = camPose3D.getPosition().x * 39.3701;
-                camY = camPose3D.getPosition().y * 39.3701;
-                    LLPose = new Pose(camX, camY, (imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) - Math.toRadians(90)));
+                camX = (camPose3D.getPosition().x * 39.3701) +72;
+                camY = (camPose3D.getPosition().y * 39.3701) +72;
+                    LLPose = new Pose(camX, camY, follower.getHeading());
                     LLPose.getAsCoordinateSystem(PedroCoordinates.INSTANCE);
                     double errorVision = Math.hypot(LLPose.getX() - follower.getPose().getX(), LLPose.getY() - follower.getPose().getY());
                 if (errorVision > 3) {
@@ -177,12 +150,12 @@ public class Robot {
      */
     private void calculateGoalMetrics() {
         double dx = goalX - follower.getPose().getX();
-        double dy = goalY - follower.getPose().getX();
+        double dy = goalY - follower.getPose().getY();
 
         distanceToGoal = Math.hypot(dx, dy);
 
         // Calculate angle to goal relative to turret
-        double imuDegrees = getIMUYawDegrees();
+        double imuDegrees = follower.getPose().getHeading();
         double turretAngle = turret.getCurrentAngle();
         angleToGoal = AngleUnit.normalizeDegrees(Math.toDegrees(Math.atan2(dy, dx)) - imuDegrees - turretAngle);
     }
@@ -205,15 +178,8 @@ public class Robot {
     /**
      * Get IMU yaw in degrees.
      */
-    public double getIMUYawDegrees() {
-        return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + 90; //rotacionado em direção ao goal red
-    }
-
-    /**
-     * Get IMU yaw in radians.
-     */
-    public double getIMUYawRadians() {
-        return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+    public double getHeading() {
+        return follower.getHeading();
     }
 
     /**
