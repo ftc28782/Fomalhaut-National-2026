@@ -21,7 +21,7 @@ public class FlywheelSubsystem extends SubsystemBase {
     public static final double TICKS_PER_REV = 28;
 
     // PIDF coefficients for shooter motors
-    public static final PIDFCoefficients SHOOTER_PIDF = new PIDFCoefficients(16, 0, 0, 15.5);
+    public static final PIDFCoefficients SHOOTER_PIDF = new PIDFCoefficients(6, 0.7, 0, 0);
     private double targetVelocityRPM = 3200;
     private double hoodPosition = 1;
     private boolean isRunning = false;

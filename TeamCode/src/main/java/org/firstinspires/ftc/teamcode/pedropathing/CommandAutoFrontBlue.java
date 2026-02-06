@@ -22,16 +22,13 @@ import org.firstinspires.ftc.teamcode.commands.TurretTrackCommand;
 @Autonomous(name = "Command Auto Front Blue")
 public class CommandAutoFrontBlue extends CommandOpMode {
 
-    public double goalX = 8.0;   // Perto da parede lateral
-    public double goalY = 136.0; // Perto da meta azul
-
     private Robot robot;
     private AutoPaths paths;
     private IntakeRunCommand intake;
     private boolean stateInit, arrived = false;
     private Timer pathTimer;
     private int pathState = 0;
-    public Pose startPose = new Pose(42.000, 136.000, Math.toRadians(0));
+    public Pose startPose = new Pose(42.000, 136.000);
 
     @Override
     public void initialize() {

@@ -102,7 +102,7 @@ public class RedAllianceTeleOp extends CommandOpMode {
         telemetry.addData("X LL", robot.getCamX());
         telemetry.addData("Y LL", robot.getCamY());
         telemetry.addData("X", robot.getX());
-        telemetry.addData("uY", robot.getY());
+        telemetry.addData("Y", robot.getY());
         telemetry.addData("Distance", robot.getDistanceToGoal());
         telemetry.addData("Shooter Error", robot.flywheel.getVelocityError());
         telemetry.addData("Target Velocity", robot.flywheel.getTargetVelocityRPM());

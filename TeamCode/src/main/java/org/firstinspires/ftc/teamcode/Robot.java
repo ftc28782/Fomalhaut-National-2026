@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.ftc.PoseConverter;
 import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -52,6 +53,7 @@ public class Robot {
     // Alpha filter constant for vision fusion
     private double alphaXY = 0.08;
     Pose LLPose;
+    Pose followerPose;
 
     /**
      * Creates a new Robot with all subsystems.
@@ -67,7 +69,7 @@ public class Robot {
 
         // Initialize Pinpoint/Follower
         follower = Constants.createFollower(hardwareMap);
-        follower.setPose(new Pose(72, 72, 0));
+        follower.setPose(new Pose(72, 72, Math.toRadians(270)));
 
         // Initialize Limelight
         limelight = hardwareMap.get(Limelight3A.class, "limelightTurret");
@@ -99,10 +101,11 @@ public class Robot {
         intake.periodic();
 
         // Update follower
+        follower.getPose().getAsCoordinateSystem(PedroCoordinates.INSTANCE);
         follower.update();
 
         // Update limelight orientation
-        limelight.updateRobotOrientation(follower.getHeading());
+        limelight.updateRobotOrientation(Math.toDegrees(follower.getHeading()));
 
         // Calculate distance and angle to goal
         calculateGoalMetrics();
@@ -118,10 +121,9 @@ public class Robot {
         if (result != null && result.isValid()) {
             Pose3D camPose3D = result.getBotpose_MT2();
             if (camPose3D != null) {
-                camX = (camPose3D.getPosition().x * 39.3701) +72;
-                camY = (camPose3D.getPosition().y * 39.3701) +72;
+                camX = (camPose3D.getPosition().x * 39.3701) + 72;
+                camY = (camPose3D.getPosition().y * 39.3701) + 72;
                     LLPose = new Pose(camX, camY, follower.getHeading());
-                    LLPose.getAsCoordinateSystem(PedroCoordinates.INSTANCE);
                     double errorVision = Math.hypot(LLPose.getX() - follower.getPose().getX(), LLPose.getY() - follower.getPose().getY());
                 if (errorVision > 3) {
                     follower.setPose(LLPose);
@@ -129,8 +131,6 @@ public class Robot {
                 }
             }
         }
-        Pose followerPose = follower.getPose();
-        followerPose.getAsCoordinateSystem(PedroCoordinates.INSTANCE);
 //        double odoX = followerPose.getX();
 //        double odoY = followerPose.getY();
 //
@@ -155,9 +155,9 @@ public class Robot {
         distanceToGoal = Math.hypot(dx, dy);
 
         // Calculate angle to goal relative to turret
-        double imuDegrees = follower.getPose().getHeading();
+        double imuDegrees = follower.getHeading();
         double turretAngle = turret.getCurrentAngle();
-        angleToGoal = AngleUnit.normalizeDegrees(Math.toDegrees(Math.atan2(dy, dx)) - imuDegrees - turretAngle);
+        angleToGoal = AngleUnit.normalizeDegrees(Math.toDegrees(Math.atan2(dy, dx)) - Math.toDegrees(imuDegrees) - turretAngle);
     }
 
     /**
@@ -167,10 +167,10 @@ public class Robot {
      */
     public void setAlliance(Alliance alliance) {
         if (alliance == Alliance.BLUE) {
-            driveOffset = -3.1415926535897932;
+            driveOffset = -1.5707963267948966;
             setGoal(8, 136);
         } else {
-            driveOffset = 0;
+            driveOffset = 1.5707963267948966;
             setGoal(136, 136);
         }
     }

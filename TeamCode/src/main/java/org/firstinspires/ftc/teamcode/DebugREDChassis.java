@@ -50,8 +50,8 @@ public class DebugREDChassis extends OpMode {
     private double encoder;
     private double IMUDegress;
     PIDFController turretPID;
-    private double P = 0;
-    private double I = 0;
+    private double P = 6;
+    private double I = 0.7;
     public int stepIndex = 1;
     private IMU imu;
     private double a;
