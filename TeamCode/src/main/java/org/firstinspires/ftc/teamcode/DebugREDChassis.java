@@ -25,6 +25,8 @@ import org.firstinspires.ftc.teamcode.pedropathing.Constants;
 
 import java.util.concurrent.TimeUnit;
 
+
+//LAST REDDEBUGCHASSIS BEFORE SETPOWER CALIBRATION
 @TeleOp(name = "Red Alliance Teleop")
 public class DebugREDChassis extends OpMode {
     private boolean hasVision;
@@ -48,14 +50,14 @@ public class DebugREDChassis extends OpMode {
     private double encoder;
     private double IMUDegress;
     PIDFController turretPID;
-    private double P = 16;
-    private double F = 15.5;
+    private double P = 0;
+    private double I = 0;
     public int stepIndex = 1;
     private IMU imu;
     private double a;
     private double transferPower;
     private double intakePower;
-    PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
+    PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, I, 0, 0);
 
     public void init() {
 
@@ -102,7 +104,6 @@ public class DebugREDChassis extends OpMode {
         shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter1.setDirection(DcMotorSimple.Direction.FORWARD);
         shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
-        pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
         shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
     }
@@ -191,10 +192,10 @@ public class DebugREDChassis extends OpMode {
         }
 
         if (gamepad1.dpadLeftWasPressed()) {
-            F += stepSizes[stepIndex];
+            I += stepSizes[stepIndex];
         }
         if (gamepad1.dpadRightWasPressed()) {
-            F -= stepSizes[stepIndex];
+            I -= stepSizes[stepIndex];
         }
         if (gamepad1.dpadUpWasPressed()) {
             P += stepSizes[stepIndex];
@@ -203,7 +204,7 @@ public class DebugREDChassis extends OpMode {
             P -= stepSizes[stepIndex];
         }
 
-        pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
+        pidfCoefficients = new PIDFCoefficients(P, I, 0, 0);
         shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
 
@@ -275,7 +276,7 @@ public class DebugREDChassis extends OpMode {
         shooter2.setVelocity(0);
     }
         telemetry.addData("P","%.5f (D-Pad U/D)",P);
-        telemetry.addData("F","%.5f (D-Pad L/R)",F);
+        telemetry.addData("I","%.5f (D-Pad L/R)",I);
         telemetry.addData("Step Size","%.4f",stepSizes[stepIndex]);
         telemetry.addLine("B - StepSize Switch");
         telemetry.addData("X LL",camX);
