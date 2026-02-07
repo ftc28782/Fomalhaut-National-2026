@@ -80,8 +80,7 @@ public class TurretSubsystem extends SubsystemBase {
         //yVelocity = robot.follower.getVelocity().getYComponent()
         //xGoalOffset = robot.getGoalX - xVelocity * shotTime
         //yGoalOffset = robot.getGoalY - yVelocity * shotTime
-    }
-
+    } // Com isso, vou alterar o cálculo do RPM do shooter e do hood do servo, porém os valores do offset não podem ser usados para substituir os valores normais.
     /**
      * Get the current turret angle in degrees.
      */
