@@ -101,8 +101,8 @@ public class Robot {
         intake.periodic();
 
         // Update follower
-        follower.getPose().getAsCoordinateSystem(PedroCoordinates.INSTANCE);
         follower.update();
+        follower.getPose().getAsCoordinateSystem(PedroCoordinates.INSTANCE);
 
         // Update limelight orientation
         limelight.updateRobotOrientation(Math.toDegrees(follower.getHeading()));
@@ -131,18 +131,6 @@ public class Robot {
                 }
             }
         }
-//        double odoX = followerPose.getX();
-//        double odoY = followerPose.getY();
-//
-//        fusedX = odoX;
-//        fusedY = odoY;
-//
-//        double errorVision = Math.hypot(camX - odoX, camY - odoY);
-//        if (hasVision && errorVision > 3) {
-//            fusedX = odoX * (1 - alphaXY) + camX * alphaXY;
-//            fusedY = odoY * (1 - alphaXY) + camY * alphaXY;
-//            follower.setPose(new Pose(fusedX, fusedY, imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS)));
-//        }
     }
 
     /**
@@ -180,6 +168,10 @@ public class Robot {
      */
     public double getHeading() {
         return follower.getHeading();
+    }
+
+    public double getHeadingDegrees() {
+        return Math.toDegrees(follower.getHeading());
     }
 
     /**
@@ -240,6 +232,14 @@ public class Robot {
     public void setGoal(double x, double y) {
         this.goalX = x;
         this.goalY = y;
+    }
+
+    public double getGoalX() {
+        return goalX;
+    }
+
+    public double getGoalY() {
+        return goalY;
     }
 
     /**

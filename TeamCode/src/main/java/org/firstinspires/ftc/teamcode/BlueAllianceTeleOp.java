@@ -38,8 +38,7 @@ public class BlueAllianceTeleOp extends CommandOpMode {
         robot.turret.setDefaultCommand(
                 new TurretTrackCommand(
                         robot.turret,
-                        robot::getAngleToGoal,
-                        () -> gamepad1.right_stick_x
+                        robot::getAngleToGoal
                 )
         );
                 // Usando SolversLib GamepadEx
@@ -90,14 +89,14 @@ public class BlueAllianceTeleOp extends CommandOpMode {
         telemetry.addData("Y LL", robot.getCamY());
         telemetry.addData("X", robot.getX());
         telemetry.addData("Y", robot.getY());
+        telemetry.addData("X Velocity", robot.follower.getVelocity().getXComponent());
+        telemetry.addData("Y Velocity", robot.follower.getVelocity().getYComponent());
         telemetry.addData("Distance", robot.getDistanceToGoal());
         telemetry.addData("Shooter Error", robot.flywheel.getVelocityError());
         telemetry.addData("Target Velocity", robot.flywheel.getTargetVelocityRPM());
-        telemetry.addData("IMUAngle", robot.getHeading());
+        telemetry.addData("IMUAngle", robot.getHeadingDegrees());
         telemetry.addData("Turret Angle", robot.turret.getCurrentAngle());
         telemetry.addData("Angle to Goal", robot.getAngleToGoal());
-        telemetry.addData("Hood", robot.flywheel.getHoodPosition());
-        telemetry.addData("Flywheel Running", robot.flywheel.isRunning());
         telemetry.update();
     }
 }

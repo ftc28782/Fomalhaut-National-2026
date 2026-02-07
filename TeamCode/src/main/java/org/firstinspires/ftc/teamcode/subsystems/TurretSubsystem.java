@@ -64,14 +64,22 @@ public class TurretSubsystem extends SubsystemBase {
     /**
      * Calculate PID output to track an angle error.
      * @param angleError The angle error in degrees
-     * @param chassisTurnCompensation Compensation for chassis rotation
      * @return The calculated power
      */
-    public double calculatePIDPower(double angleError, double chassisTurnCompensation) {
+    public double calculatePIDPower(double angleError) {
         if (Math.abs(angleError) < 0.4) {
             angleError = 0;
         }
-        return -turretPID.calculate(angleError) + (chassisTurnCompensation * 1);
+        return -turretPID.calculate(angleError);
+    }
+
+    public void GoalMovingOffset() {
+
+        //Shot time = a equation based on distance being X and Shot time the Y --> shotTime = 321 - 42*distance - 0.02*Math.pow(distance,2);
+        //xVelocity = robot.follower.getVelocity().getXComponent()
+        //yVelocity = robot.follower.getVelocity().getYComponent()
+        //xGoalOffset = robot.getGoalX - xVelocity * shotTime
+        //yGoalOffset = robot.getGoalY - yVelocity * shotTime
     }
 
     /**

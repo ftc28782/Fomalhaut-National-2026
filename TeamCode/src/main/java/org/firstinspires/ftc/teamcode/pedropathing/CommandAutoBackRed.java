@@ -41,8 +41,7 @@ public class CommandAutoBackRed extends CommandOpMode {
         robot.turret.setDefaultCommand(
                 new TurretTrackCommand(
                         robot.turret,
-                        robot::getAngleToGoal,
-                        () -> 0 // No chassis turn compensation in auto
+                        robot::getAngleToGoal
                 )
         );
 

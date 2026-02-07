@@ -14,29 +14,23 @@ public class TurretTrackCommand extends CommandBase {
 
     private final TurretSubsystem turret;
     private final DoubleSupplier angleErrorSupplier;
-    private final DoubleSupplier chassisTurnSupplier;
-
     /**
      * Creates a new TurretTrackCommand.
      *
      * @param turret The turret subsystem
      * @param angleErrorSupplier Supplier for the angle error to track
-     * @param chassisTurnSupplier Supplier for chassis turn compensation (e.g., from gamepad)
      */
     public TurretTrackCommand(TurretSubsystem turret,
-                               DoubleSupplier angleErrorSupplier,
-                               DoubleSupplier chassisTurnSupplier) {
+                               DoubleSupplier angleErrorSupplier) {
         this.turret = turret;
         this.angleErrorSupplier = angleErrorSupplier;
-        this.chassisTurnSupplier = chassisTurnSupplier;
         addRequirements(turret);
     }
 
     @Override
     public void execute() {
         double angleError = angleErrorSupplier.getAsDouble();
-        double chassisTurn = chassisTurnSupplier.getAsDouble();
-        double power = turret.calculatePIDPower(angleError, chassisTurn);
+        double power = turret.calculatePIDPower(angleError);
         turret.setPower(power);
     }
 

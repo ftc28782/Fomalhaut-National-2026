@@ -39,8 +39,7 @@ public class RedAllianceTeleOp extends CommandOpMode {
         robot.turret.setDefaultCommand(
                 new TurretTrackCommand(
                         robot.turret,
-                        robot::getAngleToGoal,
-                        () -> gamepad1.right_stick_x
+                        robot::getAngleToGoal
                 )
         );
 
@@ -106,7 +105,7 @@ public class RedAllianceTeleOp extends CommandOpMode {
         telemetry.addData("Distance", robot.getDistanceToGoal());
         telemetry.addData("Shooter Error", robot.flywheel.getVelocityError());
         telemetry.addData("Target Velocity", robot.flywheel.getTargetVelocityRPM());
-        telemetry.addData("IMUAngle", robot.getHeading());
+        telemetry.addData("IMUAngle", robot.getHeadingDegrees());
         telemetry.addData("Turret Angle", robot.turret.getCurrentAngle());
         telemetry.addData("Angle to Goal", robot.getAngleToGoal());
         telemetry.addData("Hood", robot.flywheel.getHoodPosition());
