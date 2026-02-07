@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
@@ -10,10 +11,7 @@ import com.seattlesolvers.solverslib.controller.PIDFController;
  * Turret subsystem that controls the turret servos and tracks position via encoder.
  */
 public class TurretSubsystem extends SubsystemBase {
-
-    private final CRServo turretLeft;
-    private final CRServo turretRight;
-    private final DcMotorEx encoderMotor; // Intake motor used for encoder reading
+    private final DcMotorEx encoderMotor, turretMotor; // Intake motor used for encoder reading
 
     private final PIDFController turretPID;
 
@@ -32,8 +30,7 @@ public class TurretSubsystem extends SubsystemBase {
     private double lastPower = 0;
 
     public TurretSubsystem(HardwareMap hardwareMap, DcMotorEx encoderMotor) {
-        turretLeft = hardwareMap.get(CRServo.class, "turretLeft");
-        turretRight = hardwareMap.get(CRServo.class, "rightTurret");
+        turretMotor = hardwareMap.get(DcMotorEx.class, "turretMotor");
         this.encoderMotor = encoderMotor;
 
         turretPID = new PIDFController(kP, 0.0, kD, 0);
@@ -61,8 +58,7 @@ public class TurretSubsystem extends SubsystemBase {
         }
 
         lastPower = power;
-        turretLeft.setPower(power);
-        turretRight.setPower(power);
+        turretMotor.setPower(power);
     }
 
     /**
