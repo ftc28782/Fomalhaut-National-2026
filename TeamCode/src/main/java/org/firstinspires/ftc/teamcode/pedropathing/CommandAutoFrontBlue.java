@@ -28,7 +28,7 @@ public class CommandAutoFrontBlue extends CommandOpMode {
     private boolean stateInit, arrived = false;
     private Timer pathTimer;
     private int pathState = 0;
-    public Pose startPose = new Pose(42.000, 136.000);
+    public Pose startPose = new Pose(42.000, 136.000, Math.toRadians(0));
 
     @Override
     public void initialize() {
