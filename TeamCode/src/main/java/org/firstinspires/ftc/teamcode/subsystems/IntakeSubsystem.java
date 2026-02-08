@@ -33,14 +33,14 @@ public class IntakeSubsystem extends SubsystemBase {
      * Run the intake forward.
      */
     public void runForward() {
-        setPower(1);
+        setPower(-1);
     }
 
     /**
      * Run the intake backward (outtake).
      */
     public void runBackward() {
-        setPower(-1);
+        setPower(1);
     }
 
     /**

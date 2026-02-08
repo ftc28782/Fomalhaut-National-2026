@@ -37,11 +37,10 @@ public class Constants {
     .leftRearMotorName("backLeft")
     .rightFrontMotorName("frontRight")
     .rightRearMotorName("backRight")
-    .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
+    .leftFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
     .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
-    .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
+    .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
     .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
-    .useBrakeModeInTeleOp(true)
     .xVelocity(60.755)
     .yVelocity(48.707); //mudar uns 2 inches na configuracao da limelight
 

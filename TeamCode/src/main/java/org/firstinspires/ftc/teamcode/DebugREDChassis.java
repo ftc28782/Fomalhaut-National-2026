@@ -40,7 +40,8 @@ public class DebugREDChassis extends OpMode {
     private double hood_position = 0.5;
     GamepadEx driver;
     DcMotorEx shooter1, shooter2, intake, turretMotor = null;
-    Servo hoodservo, transferServo = null;
+    Servo hoodservo = null;
+//    Servo transferServo = null;
     private double turretPower;
     private final double GOAL_BLUE_X = -66, GOAL_BLUE_Y = 66;
     private double c = 0;
@@ -64,7 +65,7 @@ public class DebugREDChassis extends OpMode {
 
         //TURRET PID
         turretPID = new PIDFController(tP, 0.0, tD, 0);
-        turretPID.setTolerance(0.5);
+        turretPID.setTolerance(0);
         turretPID.setSetPoint(0);
 
         //IMU
@@ -80,7 +81,7 @@ public class DebugREDChassis extends OpMode {
         turretMotor = hardwareMap.get(DcMotorEx.class, "turretMotor");
 
         //TRANSFER SERVO
-        transferServo = hardwareMap.get(Servo.class, "transferServo");
+//        transferServo = hardwareMap.get(Servo.class, "transferServo");
 
         //PINPOINT
         follower = Constants.createFollower(hardwareMap);
@@ -104,8 +105,8 @@ public class DebugREDChassis extends OpMode {
         hoodservo = hardwareMap.get(Servo.class, "hoodServo");
         shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shooter1.setDirection(DcMotorSimple.Direction.FORWARD);
-        shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooter2.setDirection(DcMotorSimple.Direction.FORWARD);
         shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
     }
@@ -117,6 +118,9 @@ public class DebugREDChassis extends OpMode {
 
         //THROUGHBORE ENCODER
         encoder = (intake.getCurrentPosition() / 77.369);
+//        double TICKS_PER_REV = 8192.0;
+//        double GEAR_RATIO = 3.4;
+//        double TICKS_PER_DEGREE = (TICKS_PER_REV * GEAR_RATIO) / 360.0;
         turretAngle = encoder;
 
         //IMU
@@ -173,7 +177,9 @@ public class DebugREDChassis extends OpMode {
         if (Math.abs(angleToGoal) < 0.4) {
             angleToGoal = 0;
         }
+        turretPID = new PIDFController(tP, 0.0, tD, 0);
         turretPower = -turretPID.calculate(angleToGoal);
+
 
         if (turretAngle > 115 && turretPower > 0) {
             turretPower = 0;
@@ -245,7 +251,7 @@ public class DebugREDChassis extends OpMode {
         if(intakeByTrigger ||intakeByA)
 
     {
-        intakePower = 1;
+        intakePower = -1;
     } else
 
     {
@@ -255,12 +261,12 @@ public class DebugREDChassis extends OpMode {
 
     {
         intake.setPower(intakePower);
-        transferServo.setPosition(transferPower);
+//        transferServo.setPosition(transferPower);
     } else
 
     {
         intake.setPower(0);
-        transferServo.setPosition(0);
+//        transferServo.setPosition(0);
     }
         if(gamepad1.xWasPressed()) { //Shooter
         a++;
