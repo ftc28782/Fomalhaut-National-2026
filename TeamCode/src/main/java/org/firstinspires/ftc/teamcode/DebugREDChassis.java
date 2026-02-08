@@ -37,7 +37,7 @@ public class DebugREDChassis extends OpMode {
     private double camY;
     Follower follower;
     double alphaXY = 0.2;
-    private double hood_position = 1;
+    private double hood_position = 0.5;
     GamepadEx driver;
     CRServo transferServo = null;
     DcMotorEx shooter1, shooter2, intake, turretMotor = null;
@@ -211,14 +211,19 @@ public class DebugREDChassis extends OpMode {
         //SHOOTER AND HOOD POSITION
 //        hood_position = -0.8909748 + 0.0521592 * distance - 0.0006677889 * Math.pow(distance, 2) + 0.000003639036 * Math.pow(distance, 3) - 7.141361e-9 * Math.pow(distance, 4);
         hoodservo.setPosition(hood_position); //Set Hood position
+        if (gamepad1.leftBumperWasPressed()) {
+            hood_position -= 0.01;
+        } else if (gamepad1.rightBumperWasPressed()) {
+            hood_position += 0.01;
+        }
 
-        TargetVelocity = 1364.45 + 21.20203 * distance - 0.03188598 * Math.pow(distance, 2);
-//        if (gamepad1.leftBumperWasPressed()) {
-//            TargetVelocity = TargetVelocity - 100;
-//        }
-//        if (gamepad1.rightBumperWasPressed()) {
-//            TargetVelocity = TargetVelocity + 100;
-//    }
+//        TargetVelocity = 1364.45 + 21.20203 * distance - 0.03188598 * Math.pow(distance, 2);
+        if (gamepad1.leftBumperWasPressed()) {
+            TargetVelocity = TargetVelocity - 100;
+        }
+        if (gamepad1.rightBumperWasPressed()) {
+            TargetVelocity = TargetVelocity + 100;
+    }
 
     double shooter_power = (TargetVelocity * TicksPerRev / 60);
 

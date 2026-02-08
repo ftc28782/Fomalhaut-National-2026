@@ -69,7 +69,7 @@ public class Robot {
 
         // Initialize Pinpoint/Follower
         follower = Constants.createFollower(hardwareMap);
-        follower.setPose(new Pose(72, 72, Math.toRadians(270)));
+        follower.setPose(new Pose(72, 72, 0));
 
         // Initialize Limelight
         limelight = hardwareMap.get(Limelight3A.class, "limelightTurret");
@@ -105,7 +105,7 @@ public class Robot {
         follower.getPose().getAsCoordinateSystem(PedroCoordinates.INSTANCE);
 
         // Update limelight orientation
-        limelight.updateRobotOrientation(Math.toDegrees(follower.getHeading()));
+        limelight.updateRobotOrientation(getHeadingDegrees());
 
         // Calculate distance and angle to goal
         calculateGoalMetrics();
