@@ -67,7 +67,7 @@ public class TurretSubsystem extends SubsystemBase {
      * @return The calculated power
      */
     public double calculatePIDPower(double angleError) {
-        if (Math.abs(angleError) < 0.4) {
+        if (Math.abs(angleError) < 0) {
             angleError = 0;
         }
         return -turretPID.calculate(angleError);
