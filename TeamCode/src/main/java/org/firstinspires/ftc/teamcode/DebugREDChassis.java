@@ -39,10 +39,9 @@ public class DebugREDChassis extends OpMode {
     double alphaXY = 0.2;
     private double hood_position = 0.5;
     GamepadEx driver;
-    CRServo transferServo = null;
     DcMotorEx shooter1, shooter2, intake, turretMotor = null;
-    Servo hoodservo = null;
-    private double servoPower;
+    Servo hoodservo, transferServo = null;
+    private double turretPower;
     private final double GOAL_BLUE_X = -66, GOAL_BLUE_Y = 66;
     private double c = 0;
     Deadline IMUTimer;
@@ -77,9 +76,11 @@ public class DebugREDChassis extends OpMode {
         imu.initialize(parameters);
         IMUTimer = new Deadline(500, TimeUnit.MILLISECONDS);
 
-        //SERVO
+        //TURRET MOTOR
         turretMotor = hardwareMap.get(DcMotorEx.class, "turretMotor");
-        transferServo = hardwareMap.get(CRServo.class, "transferServo");
+
+        //TRANSFER SERVO
+        transferServo = hardwareMap.get(Servo.class, "transferServo");
 
         //PINPOINT
         follower = Constants.createFollower(hardwareMap);
@@ -168,22 +169,19 @@ public class DebugREDChassis extends OpMode {
 
         double distance = Math.hypot(dx, dy);
 
-        //TURRET SERVOS
-        double chassisTurn = gamepad1.right_stick_x;
-
         double angleToGoal = AngleUnit.normalizeDegrees(Math.toDegrees(Math.atan2(dy, dx)) - IMUDegress - turretAngle);
         if (Math.abs(angleToGoal) < 0.4) {
             angleToGoal = 0;
         }
-        servoPower = -turretPID.calculate(angleToGoal) + (chassisTurn * 1);
+        turretPower = -turretPID.calculate(angleToGoal);
 
-        if (turretAngle > 115 && servoPower > 0) {
-            servoPower = 0;
+        if (turretAngle > 115 && turretPower > 0) {
+            turretPower = 0;
         }
-        if (turretAngle < -115 && servoPower < 0) {
-            servoPower = 0;
+        if (turretAngle < -115 && turretPower < 0) {
+            turretPower = 0;
         }
-        turretMotor.setPower(servoPower);
+        turretMotor.setPower(turretPower);
 
         //PIDF CALIBRATOR
         double[] stepSizes = {10, 1, 0.1, 0.01, 0.001, 0.0001};
@@ -217,13 +215,13 @@ public class DebugREDChassis extends OpMode {
             hood_position += 0.01;
         }
 
-//        TargetVelocity = 1364.45 + 21.20203 * distance - 0.03188598 * Math.pow(distance, 2);
-        if (gamepad1.leftBumperWasPressed()) {
-            TargetVelocity = TargetVelocity - 100;
-        }
-        if (gamepad1.rightBumperWasPressed()) {
-            TargetVelocity = TargetVelocity + 100;
-    }
+        TargetVelocity = 1364.45 + 21.20203 * distance - 0.03188598 * Math.pow(distance, 2);
+//        if (gamepad1.dpadDownWasPressed()) {
+//            TargetVelocity = TargetVelocity - 100;
+//        }
+//        if (gamepad1.dpadUpWasPressed()) {
+//            TargetVelocity = TargetVelocity + 100;
+//    }
 
     double shooter_power = (TargetVelocity * TicksPerRev / 60);
 
@@ -238,7 +236,7 @@ public class DebugREDChassis extends OpMode {
         if(intakeByA ||gamepad1.b)
 
     {
-        transferPower = 1;
+        transferPower = 0.3;
     } else
 
     {
@@ -257,12 +255,12 @@ public class DebugREDChassis extends OpMode {
 
     {
         intake.setPower(intakePower);
-        transferServo.setPower(transferPower);
+        transferServo.setPosition(transferPower);
     } else
 
     {
         intake.setPower(0);
-        transferServo.setPower(0);
+        transferServo.setPosition(0);
     }
         if(gamepad1.xWasPressed()) { //Shooter
         a++;
