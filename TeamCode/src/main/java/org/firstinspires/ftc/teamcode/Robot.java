@@ -23,9 +23,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class Robot {
 
-    public enum Alliance {
-        BLUE, RED
-    }
 
     // Subsystems
     public final TurretSubsystem turret;
@@ -52,9 +49,14 @@ public class Robot {
 
     // Alpha filter constant for vision fusion
     private double alphaXY = 0.08;
-    Pose LLPose;
+    private double imuDegrees;
     Pose followerPose;
-
+    public enum Alliance {
+        AUTO_BLUE,
+        AUTO_RED,
+        RED,
+        BLUE
+    }
     /**
      * Creates a new Robot with all subsystems.
      *
@@ -69,7 +71,7 @@ public class Robot {
 
         // Initialize Pinpoint/Follower
         follower = Constants.createFollower(hardwareMap);
-        follower.setPose(new Pose(72, 72, 0));
+        follower.setPose(new Pose(0, 0, 0));
 
         // Initialize Limelight
         limelight = hardwareMap.get(Limelight3A.class, "limelightTurret");
@@ -121,12 +123,11 @@ public class Robot {
         if (result != null && result.isValid()) {
             Pose3D camPose3D = result.getBotpose_MT2();
             if (camPose3D != null) {
-                camX = (camPose3D.getPosition().x * 39.3701) + 72;
-                camY = (camPose3D.getPosition().y * 39.3701) + 72;
-                    LLPose = new Pose(camX, camY, follower.getHeading());
-                    double errorVision = Math.hypot(LLPose.getX() - follower.getPose().getX(), LLPose.getY() - follower.getPose().getY());
+                camX = (camPose3D.getPosition().x * 39.3701);
+                camY = (camPose3D.getPosition().y * 39.3701);
+                    double errorVision = Math.hypot(camX - follower.getPose().getX(), camY - follower.getPose().getY());
                 if (errorVision > 3) {
-                    follower.setPose(LLPose);
+                    follower.setPose(new Pose(camX,camY,follower.getHeading()));
                     hasVision = true;
                 }
             }
@@ -143,10 +144,13 @@ public class Robot {
         distanceToGoal = Math.hypot(dx, dy);
 
         // Calculate angle to goal relative to turret
-        double imuDegrees = follower.getHeading();
+        imuDegrees = normalizeDegrees(getHeadingDegrees());
         double turretAngle = turret.getCurrentAngle();
-        angleToGoal = AngleUnit.normalizeDegrees(Math.toDegrees(Math.atan2(dy, dx)) - Math.toDegrees(imuDegrees) - turretAngle);
+        angleToGoal = AngleUnit.normalizeDegrees(Math.toDegrees(Math.atan2(dy, dx)) - imuDegrees - turretAngle);
     }
+        public double FixedIMUDegrees() {
+        return imuDegrees;
+        }
 
     /**
      * Sets the alliance to adjust drive orientation and goal position.
@@ -154,15 +158,27 @@ public class Robot {
      * @param alliance The alliance color
      */
     public void setAlliance(Alliance alliance) {
-        if (alliance == Alliance.BLUE) {
+        if (alliance == Alliance.BLUE){
+            setGoal(-66, -66);
             driveOffset = -1.5707963267948966;
-            setGoal(8, 136);
-        } else {
+        } else if (alliance == Alliance.RED) {
+            setGoal(-66, 66);
             driveOffset = 1.5707963267948966;
+        } else if (alliance == Alliance.AUTO_BLUE) {
+            setGoal(8, 136);
+        } else if (alliance == Alliance.AUTO_RED){
             setGoal(136, 136);
         }
     }
-
+    /**
+     * Normaliza um ângulo em graus para o intervalo [-180, 180).
+     */
+    public static double normalizeDegrees(double degrees) {
+        degrees %= 360.0;
+        if (degrees >= 180.0) degrees -= 360.0;
+        if (degrees < -180.0) degrees += 360.0;
+        return degrees;
+    }
     /**
      * Get IMU yaw in degrees.
      */

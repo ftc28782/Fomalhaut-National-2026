@@ -98,6 +98,7 @@ public class RedAllianceTeleOp extends CommandOpMode {
     }
 
     private void updateTelemetry() {
+        telemetry.addData("Alliance", "BLUE");
         telemetry.addData("X LL", robot.getCamX());
         telemetry.addData("Y LL", robot.getCamY());
         telemetry.addData("X", robot.getX());
@@ -106,6 +107,7 @@ public class RedAllianceTeleOp extends CommandOpMode {
         telemetry.addData("Shooter Error", robot.flywheel.getVelocityError());
         telemetry.addData("Target Velocity", robot.flywheel.getTargetVelocityRPM());
         telemetry.addData("IMUAngle", robot.getHeadingDegrees());
+        telemetry.addData("Fixed IMUAngle", robot.FixedIMUDegrees());
         telemetry.addData("Turret Angle", robot.turret.getCurrentAngle());
         telemetry.addData("Angle to Goal", robot.getAngleToGoal());
         telemetry.addData("Hood", robot.flywheel.getHoodPosition());

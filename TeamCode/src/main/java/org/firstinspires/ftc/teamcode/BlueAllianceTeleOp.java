@@ -94,6 +94,7 @@ public class BlueAllianceTeleOp extends CommandOpMode {
         telemetry.addData("Distance", robot.getDistanceToGoal());
         telemetry.addData("Shooter Error", robot.flywheel.getVelocityError());
         telemetry.addData("Target Velocity", robot.flywheel.getTargetVelocityRPM());
+        telemetry.addData("Fixed IMUAngle", robot.FixedIMUDegrees());
         telemetry.addData("IMUAngle", robot.getHeadingDegrees());
         telemetry.addData("Turret Angle", robot.turret.getCurrentAngle());
         telemetry.addData("Angle to Goal", robot.getAngleToGoal());

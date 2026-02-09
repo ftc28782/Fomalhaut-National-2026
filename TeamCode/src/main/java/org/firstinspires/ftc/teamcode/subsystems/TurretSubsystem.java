@@ -24,7 +24,7 @@ public class TurretSubsystem extends SubsystemBase {
     public static final double MIN_ANGLE = -115;
 
     // Encoder ticks to degrees conversion
-    private static final double TICKS_TO_DEGREES = 77.369;
+    private static final double TICKS_TO_DEGREES = 73.40501792085333;
 
     private double currentAngle = 0;
     private double lastPower = 0;

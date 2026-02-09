@@ -52,13 +52,14 @@ public class DebugREDChassis extends OpMode {
     PIDFController turretPID;
     private double P = 6;
     private double I = 0.7;
-    private double tP = 0;
-    private double tD = 0;
+    private double tP = 0.014;
+    private double tD = 0.0015;
     public int stepIndex = 1;
     private IMU imu;
     private double a;
     private double transferPower;
     private double intakePower;
+    private boolean PDchange;
     PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, I, 0, 0);
 
     public void init() {
@@ -117,10 +118,7 @@ public class DebugREDChassis extends OpMode {
         driver.readButtons(); // Process WasPressed events
 
         //THROUGHBORE ENCODER
-        encoder = (intake.getCurrentPosition() / 77.369);
-//        double TICKS_PER_REV = 8192.0;
-//        double GEAR_RATIO = 3.4;
-//        double TICKS_PER_DEGREE = (TICKS_PER_REV * GEAR_RATIO) / 360.0;
+        encoder = (intake.getCurrentPosition() / 73.40501792085333);
         turretAngle = encoder;
 
         //IMU
@@ -138,12 +136,6 @@ public class DebugREDChassis extends OpMode {
         double odoX = followerPose.getX();
         double odoY = followerPose.getY();
 
-        //LAST COMMIT BEFORE THE FINAL ROBOT
-        // LIMELIGHT
-//        double turretRadius = 7;
-//        double robotX = camX - (turretRadius * Math.cos(Math.toRadians(turretAngle)));
-//        double robotY = camY - (turretRadius * Math.sin(Math.toRadians(turretAngle)));
-//        limelightChassis.updateRobotOrientation(turretAngle);
         limelightChassis.updateRobotOrientation(IMUDegress);
 
         hasVision = false;
@@ -177,7 +169,9 @@ public class DebugREDChassis extends OpMode {
         if (Math.abs(angleToGoal) < 0.4) {
             angleToGoal = 0;
         }
-        turretPID = new PIDFController(tP, 0.0, tD, 0);
+        if (PDchange) {
+            turretPID.setPIDF(tP, 0.0, tD, 0);
+        }
         turretPower = -turretPID.calculate(angleToGoal);
 
 
@@ -195,17 +189,22 @@ public class DebugREDChassis extends OpMode {
             stepIndex = (stepIndex + 1) % stepSizes.length;
         }
 
+        PDchange = false;
         if (gamepad1.dpadLeftWasPressed()) {
             tD += stepSizes[stepIndex];
+             PDchange = false;
         }
         if (gamepad1.dpadRightWasPressed()) {
             tD -= stepSizes[stepIndex];
+             PDchange = false;
         }
         if (gamepad1.dpadUpWasPressed()) {
             tP += stepSizes[stepIndex];
+             PDchange = false;
         }
         if (gamepad1.dpadDownWasPressed()) {
             tP -= stepSizes[stepIndex];
+             PDchange = false;
         }
 
         pidfCoefficients = new PIDFCoefficients(P, I, 0, 0);

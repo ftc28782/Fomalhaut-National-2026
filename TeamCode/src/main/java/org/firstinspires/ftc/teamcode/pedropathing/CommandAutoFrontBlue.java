@@ -32,6 +32,10 @@ public class CommandAutoFrontBlue extends CommandOpMode {
 
     @Override
     public void initialize() {
+
+        //Set Alliance
+        robot.setAlliance(Robot.Alliance.AUTO_BLUE);
+
         // Initialize robot, timer, and paths
         robot = new Robot(hardwareMap,startPose);
         pathTimer = new Timer();

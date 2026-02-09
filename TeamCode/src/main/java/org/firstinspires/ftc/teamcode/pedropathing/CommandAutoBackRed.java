@@ -29,6 +29,8 @@ public class CommandAutoBackRed extends CommandOpMode {
 
     @Override
     public void initialize() {
+
+        robot.setAlliance(Robot.Alliance.AUTO_RED);
         // Initialize robot with starting pose
         robot = new Robot(hardwareMap, new Pose(118.070, 130.521, Math.toRadians(180)));
 
