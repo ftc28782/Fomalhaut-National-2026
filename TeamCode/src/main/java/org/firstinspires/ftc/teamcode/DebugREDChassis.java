@@ -67,7 +67,6 @@ public class DebugREDChassis extends OpMode {
      * ticks por grau (throughbore). Calibrado empiricamente.
      * Se você girar -90° e ler -86.7°, aumente proporcionalmente.
      */
-    private static final double TURRET_TICKS_PER_DEGREE = 148.08;
 
     public void init() {
 
@@ -124,9 +123,7 @@ public class DebugREDChassis extends OpMode {
         driver.readButtons(); // Process WasPressed events
 
         //THROUGHBORE ENCODER
-        int turretTicksRaw = intake.getCurrentPosition();
-        encoder = (turretTicksRaw / TURRET_TICKS_PER_DEGREE);
-        turretAngle = encoder;
+        turretAngle = (intake.getCurrentPosition() / 148.08);
 
         //IMU
         if (IMUTimer.hasExpired() && c < 1) {
