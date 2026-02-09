@@ -52,8 +52,9 @@ public class DebugREDChassis extends OpMode {
     PIDFController turretPID;
     private double P = 6;
     private double I = 0.7;
-    private double tP = 0.014;
-    private double tD = 0.0015;
+    private double tP = 0.022;
+    private double tD = 0.0005;
+    private double tF = 0.11;
     public int stepIndex = 1;
     private IMU imu;
     private double a;
@@ -62,12 +63,17 @@ public class DebugREDChassis extends OpMode {
     private boolean PDchange;
     PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, I, 0, 0);
 
+    /**
+     * ticks por grau (throughbore). Calibrado empiricamente.
+     * Se você girar -90° e ler -86.7°, aumente proporcionalmente.
+     */
+    private static final double TURRET_TICKS_PER_DEGREE = 148.08;
+
     public void init() {
 
         //TURRET PID
         turretPID = new PIDFController(tP, 0.0, tD, 0);
         turretPID.setTolerance(0);
-        turretPID.setSetPoint(0);
 
         //IMU
         imu = hardwareMap.get(IMU.class, "imu");
@@ -118,7 +124,8 @@ public class DebugREDChassis extends OpMode {
         driver.readButtons(); // Process WasPressed events
 
         //THROUGHBORE ENCODER
-        encoder = (intake.getCurrentPosition() / 73.40501792085333);
+        int turretTicksRaw = intake.getCurrentPosition();
+        encoder = (turretTicksRaw / TURRET_TICKS_PER_DEGREE);
         turretAngle = encoder;
 
         //IMU
@@ -165,20 +172,25 @@ public class DebugREDChassis extends OpMode {
 
         double distance = Math.hypot(dx, dy);
 
-        double angleToGoal = AngleUnit.normalizeDegrees(Math.toDegrees(Math.atan2(dy, dx)) - IMUDegress - turretAngle);
-        if (Math.abs(angleToGoal) < 0.4) {
-            angleToGoal = 0;
-        }
-        if (PDchange) {
-            turretPID.setPIDF(tP, 0.0, tD, 0);
-        }
-        turretPower = -turretPID.calculate(angleToGoal);
+        double angleToGoal = AngleUnit.normalizeDegrees(Math.toDegrees(Math.atan2(dy, dx)) - IMUDegress);
 
-
-        if (turretAngle > 115 && turretPower > 0) {
-            turretPower = 0;
+        if (angleToGoal > 115) {
+            angleToGoal = 115;
         }
-        if (turretAngle < -115 && turretPower < 0) {
+        if (angleToGoal < -115) {
+            angleToGoal = -115;
+        }
+
+        angleToGoal = AngleUnit.normalizeDegrees(angleToGoal - turretAngle);
+
+        turretPower = turretPID.calculate(angleToGoal);
+
+        if (turretPower >= 0) {
+            turretPower = turretPower + tF;
+        } else {
+            turretPower = turretPower - tF;
+        }
+        if (Math.abs(angleToGoal) < 1) {
             turretPower = 0;
         }
         turretMotor.setPower(turretPower);
@@ -189,22 +201,25 @@ public class DebugREDChassis extends OpMode {
             stepIndex = (stepIndex + 1) % stepSizes.length;
         }
 
+        if (PDchange) {
+            turretPID.setPIDF(tP, 0.0, tD, 0);
+        }
         PDchange = false;
         if (gamepad1.dpadLeftWasPressed()) {
             tD += stepSizes[stepIndex];
-             PDchange = false;
+             PDchange = true;
         }
         if (gamepad1.dpadRightWasPressed()) {
             tD -= stepSizes[stepIndex];
-             PDchange = false;
+             PDchange = true;
         }
         if (gamepad1.dpadUpWasPressed()) {
             tP += stepSizes[stepIndex];
-             PDchange = false;
+             PDchange = true;
         }
         if (gamepad1.dpadDownWasPressed()) {
             tP -= stepSizes[stepIndex];
-             PDchange = false;
+             PDchange = true;
         }
 
         pidfCoefficients = new PIDFCoefficients(P, I, 0, 0);
@@ -215,9 +230,9 @@ public class DebugREDChassis extends OpMode {
 //        hood_position = -0.8909748 + 0.0521592 * distance - 0.0006677889 * Math.pow(distance, 2) + 0.000003639036 * Math.pow(distance, 3) - 7.141361e-9 * Math.pow(distance, 4);
         hoodservo.setPosition(hood_position); //Set Hood position
         if (gamepad1.leftBumperWasPressed()) {
-            hood_position -= 0.01;
+            hood_position -= 0.025;
         } else if (gamepad1.rightBumperWasPressed()) {
-            hood_position += 0.01;
+            hood_position += 0.025;
         }
 
         TargetVelocity = 1364.45 + 21.20203 * distance - 0.03188598 * Math.pow(distance, 2);
@@ -298,6 +313,7 @@ public class DebugREDChassis extends OpMode {
         telemetry.addData("tP","%.5f (D-Pad U/D)",tP);
         telemetry.addData("tD","%.5f (D-Pad L/R)",tD);
         telemetry.addData("Hood",hood_position);
+        telemetry.addData("TurretPower", turretPower);
         telemetry.update();
 }
 }

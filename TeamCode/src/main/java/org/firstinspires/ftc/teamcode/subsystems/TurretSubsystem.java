@@ -18,13 +18,15 @@ public class TurretSubsystem extends SubsystemBase {
     // PID Constants
     public static double kP = 0.014;
     public static double kD = 0.0015;
+    public static double kF = 0.3;
+
 
     // Turret limits in degrees
     public static final double MAX_ANGLE = 115;
     public static final double MIN_ANGLE = -115;
 
     // Encoder ticks to degrees conversion
-    private static final double TICKS_TO_DEGREES = 73.40501792085333;
+    private static final double TICKS_TO_DEGREES = 131.96;
 
     private double currentAngle = 0;
     private double lastPower = 0;
@@ -56,7 +58,11 @@ public class TurretSubsystem extends SubsystemBase {
         if (currentAngle < MIN_ANGLE && power < 0) {
             power = 0;
         }
-
+        if (power >= 0) {
+            power = power + kF;
+        } else {
+            power = power - kF;
+        }
         lastPower = power;
         turretMotor.setPower(power);
     }
@@ -67,10 +73,10 @@ public class TurretSubsystem extends SubsystemBase {
      * @return The calculated power
      */
     public double calculatePIDPower(double angleError) {
-        if (Math.abs(angleError) < 0) {
+        if (Math.abs(angleError) < 0.6) {
             angleError = 0;
         }
-        return -turretPID.calculate(angleError);
+        return turretPID.calculate(angleError);
     }
 
     public void GoalMovingOffset() {
