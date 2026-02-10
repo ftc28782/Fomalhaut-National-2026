@@ -171,21 +171,21 @@ public class DebugREDChassis extends OpMode {
 
         double angleToGoal = AngleUnit.normalizeDegrees(Math.toDegrees(Math.atan2(dy, dx)) - IMUDegress);
 
-        if (angleToGoal > 115) {
-            angleToGoal = 115;
-        }
-        if (angleToGoal < -115) {
-            angleToGoal = -115;
-        }
-
         angleToGoal = AngleUnit.normalizeDegrees(angleToGoal - turretAngle);
 
         turretPower = turretPID.calculate(angleToGoal);
 
-        if (turretPower >= 0) {
+        if (turretPower >= 0) { //F from PIDF
             turretPower = turretPower + tF;
         } else {
             turretPower = turretPower - tF;
+        }
+
+        if (turretAngle > 115 && turretPower < 0) { //Inverti os > do turretPower < 0
+            turretPower = tF;
+        }
+        if (turretAngle < -115 && turretPower > 0) {
+            turretPower = tF;
         }
         if (Math.abs(angleToGoal) < 1) {
             turretPower = 0;
