@@ -180,10 +180,10 @@ public class DebugREDChassis extends OpMode {
             turretPower = turretPower - tF;
         }
 
-        if (turretAngle > 115 && turretPower < 0) { //Inverti os > do turretPower < 0
+        if (turretAngle > 115 && turretPower > 0) { //Inverti os > do turretPower < 0 denovo
             turretPower = 0;
         }
-        if (turretAngle < -115 && turretPower > 0) {
+        if (turretAngle < -115 && turretPower < 0) {
             turretPower = 0;
         }
         if (Math.abs(angleToGoal) < 1) {
