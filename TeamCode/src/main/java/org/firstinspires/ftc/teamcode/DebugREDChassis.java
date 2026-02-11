@@ -36,6 +36,7 @@ public class DebugREDChassis extends OpMode {
     private double camX;
     private double camY;
     Follower follower;
+    private double errorVision;
     private double hood_position = 0.5;
     GamepadEx driver;
     DcMotorEx shooter1, shooter2, intake, turretMotor = null;
@@ -145,8 +146,8 @@ public class DebugREDChassis extends OpMode {
             if (camPose3D != null) {
                 camX = (camPose3D.getPosition().x * 39.3701);
                 camY = (camPose3D.getPosition().y * 39.3701);
-                double errorVision = Math.hypot(camX - follower.getPose().getX(), camY - follower.getPose().getY());
-                if (errorVision > 3 && gamepad1.aWasPressed()) {
+                errorVision = Math.hypot(camX - follower.getPose().getX(), camY - follower.getPose().getY());
+                if (gamepad1.a) {
                     follower.setPose(new Pose(camX, camY, follower.getHeading()));
                 }
             }
@@ -180,10 +181,10 @@ public class DebugREDChassis extends OpMode {
         }
 
         if (turretAngle > 115 && turretPower < 0) { //Inverti os > do turretPower < 0
-            turretPower = tF;
+            turretPower = 0;
         }
         if (turretAngle < -115 && turretPower > 0) {
-            turretPower = tF;
+            turretPower = 0;
         }
         if (Math.abs(angleToGoal) < 1) {
             turretPower = 0;
@@ -287,6 +288,7 @@ public class DebugREDChassis extends OpMode {
         telemetry.addData("intakePosition","%.5f (D-Pad L/R)",intakePosition);
         telemetry.addData("Hood",hood_position);
         telemetry.addData("TurretPower", turretPower);
+        telemetry.addData("odo error",errorVision);
         telemetry.update();
 }
 }
