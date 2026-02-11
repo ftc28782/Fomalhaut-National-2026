@@ -36,7 +36,6 @@ public class DebugREDChassis extends OpMode {
     private double camX;
     private double camY;
     Follower follower;
-    double alphaXY = 0.2;
     private double hood_position = 0.5;
     GamepadEx driver;
     DcMotorEx shooter1, shooter2, intake, turretMotor = null;
@@ -45,6 +44,7 @@ public class DebugREDChassis extends OpMode {
     private final double GOAL_BLUE_X = -66, GOAL_BLUE_Y = 66;
     private double c = 0;
     Deadline IMUTimer;
+    private double odoX,odoY;
     private double turretAngle;
     private double IMUDegress;
     PIDFController turretPID;
@@ -134,37 +134,35 @@ public class DebugREDChassis extends OpMode {
         follower.update();
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false, 1.5708);
 
-        // PINPOINT
-        Pose followerPose = follower.getPose();
-        double odoX = followerPose.getX();
-        double odoY = followerPose.getY();
 
+
+        //LIMELIGHT
         limelightChassis.updateRobotOrientation(IMUDegress);
 
-        hasVision = false;
-
-        LLResult resultTurret = limelightChassis.getLatestResult();
-        if (resultTurret != null && resultTurret.isValid()) {
-            Pose3D camPose3D = resultTurret.getBotpose_MT2();
+        LLResult result = limelightChassis.getLatestResult();
+        if (result != null && result.isValid()) {
+            Pose3D camPose3D = result.getBotpose_MT2();
             if (camPose3D != null) {
-                camX = camPose3D.getPosition().x * 39.3701;
-                camY = camPose3D.getPosition().y * 39.3701;
-                hasVision = true;
+                camX = (camPose3D.getPosition().x * 39.3701);
+                camY = (camPose3D.getPosition().y * 39.3701);
+                double errorVision = Math.hypot(camX - follower.getPose().getX(), camY - follower.getPose().getY());
+                if (errorVision > 3 && gamepad1.aWasPressed()) {
+                    follower.setPose(new Pose(camX, camY, follower.getHeading()));
+                }
             }
         }
 
-        //ALPLHA FILTER & DISTANCE
-        double fusedX = odoX;
-        double fusedY = odoY;
+        //IMU RESET
 
-        double errorVision = Math.hypot(camX - odoX, camY - odoY);
-        if (hasVision && errorVision > 3) {
-            fusedX = odoX * (1 - alphaXY) + camX * alphaXY;
-            fusedY = odoY * (1 - alphaXY) + camY * alphaXY;
-            follower.setPose(new Pose(fusedX, fusedY, (imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS))));
-        }
-        double dx = GOAL_BLUE_X - fusedX;
-        double dy = GOAL_BLUE_Y - fusedY;
+
+
+        // PINPOINT
+        Pose followerPose = follower.getPose();
+        odoX = followerPose.getX();
+        odoY = followerPose.getY();
+
+        double dx = GOAL_BLUE_X - odoX;
+        double dy = GOAL_BLUE_Y - odoY;
 
         double distance = Math.hypot(dx, dy);
 
@@ -276,8 +274,8 @@ public class DebugREDChassis extends OpMode {
         telemetry.addLine("B - StepSize Switch");
         telemetry.addData("X LL",camX);
         telemetry.addData("Y LL",camY);
-        telemetry.addData("FusedX",fusedX);
-        telemetry.addData("FusedY",fusedY);
+        telemetry.addData("FusedX",odoX);
+        telemetry.addData("FusedY",odoY);
         telemetry.addData("Distance",distance);
         telemetry.addData("Shooter Error",error);
         telemetry.addData("Target Velocity",TargetVelocity);
