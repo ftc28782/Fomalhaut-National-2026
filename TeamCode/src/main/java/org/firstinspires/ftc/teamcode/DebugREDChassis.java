@@ -153,8 +153,9 @@ public class DebugREDChassis extends OpMode {
         }
 
         //IMU RESET
-
-
+        if (gamepad1.bWasPressed()) {
+            imu.resetYaw();
+        }
 
         // PINPOINT
         Pose followerPose = follower.getPose();
@@ -279,7 +280,7 @@ public class DebugREDChassis extends OpMode {
         telemetry.addData("Distance",distance);
         telemetry.addData("Shooter Error",error);
         telemetry.addData("Target Velocity",TargetVelocity);
-        telemetry.addData("IMUAngle",IMUDegress);
+        telemetry.addData("IMUAngle (B to reset)",IMUDegress);
         telemetry.addData("Turret Angle",turretAngle);
         telemetry.addData("Angle to Goal",angleToGoal);
         telemetry.addData("transferPosition","%.5f (D-Pad U/D)",transferPosition);
