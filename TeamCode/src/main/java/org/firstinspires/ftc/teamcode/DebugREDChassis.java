@@ -46,6 +46,7 @@ public class DebugREDChassis extends OpMode {
     private double c = 0;
     Deadline IMUTimer;
     private double odoX,odoY;
+    private double intakeRPM;
     private double turretAngle;
     private double IMUDegress;
     PIDFController turretPID;
@@ -163,6 +164,7 @@ public class DebugREDChassis extends OpMode {
         odoX = followerPose.getX();
         odoY = followerPose.getY();
 
+        //GOAL AND ANGLETOGOAL CALCULATIONS
         double dx = GOAL_BLUE_X - odoX;
         double dy = GOAL_BLUE_Y - odoY;
 
@@ -174,16 +176,18 @@ public class DebugREDChassis extends OpMode {
 
         turretPower = turretPID.calculate(angleToGoal);
 
+        //TURRET SYSTEM
+
         if (turretPower >= 0) { //F from PIDF
             turretPower = turretPower + tF;
         } else {
             turretPower = turretPower - tF;
         }
 
-        if (turretAngle > 115 && turretPower < 0) { //Inverti os > do turretPower < 0
+        if (turretAngle > 115 && turretPower > 0) { //Inverti os > do turretPower < 0 denovo
             turretPower = 0;
         }
-        if (turretAngle < -115 && turretPower > 0) {
+        if (turretAngle < -115 && turretPower < 0) {
             turretPower = 0;
         }
         if (Math.abs(angleToGoal) < 1) {
@@ -218,18 +222,10 @@ public class DebugREDChassis extends OpMode {
              PDchange = true;
         }
 
+        //SHOOTER SYSTEM
         pidfCoefficients = new PIDFCoefficients(P, I, 0, 0);
         shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
-
-        //SHOOTER AND HOOD POSITION
-//        hood_position = -0.8909748 + 0.0521592 * distance - 0.0006677889 * Math.pow(distance, 2) + 0.000003639036 * Math.pow(distance, 3) - 7.141361e-9 * Math.pow(distance, 4);
-        hoodServo.setPosition(hood_position); //Set Hood position
-        if (gamepad1.leftBumperWasPressed()) {
-            hood_position -= 0.025;
-        } else if (gamepad1.rightBumperWasPressed()) {
-            hood_position += 0.025;
-        }
 
         TargetVelocity = 1364.45 + 21.20203 * distance - 0.03188598 * Math.pow(distance, 2);
 //        if (gamepad1.dpadDownWasPressed()) {
@@ -241,11 +237,34 @@ public class DebugREDChassis extends OpMode {
 
     double shooter_power = (TargetVelocity * TicksPerRev / 60);
 
+
     double Shooter1Vel = (shooter1.getVelocity() * 60 / TicksPerRev);
     double Shooter2Vel = (shooter2.getVelocity() * 60 / TicksPerRev);
     double CurrentVelocity = (Shooter1Vel + Shooter2Vel) / 2;
     double error = TargetVelocity - CurrentVelocity;
 
+        if(gamepad1.xWasPressed()) {
+            a++;
+        }
+
+        if(a %2==1) {
+            shooter1.setVelocity(shooter_power);
+            shooter2.setVelocity(shooter_power);
+        } else {
+            shooter1.setVelocity(0);
+            shooter2.setVelocity(0);
+        }
+
+        //HOOD POSITION
+//        hood_position = -0.8909748 + 0.0521592 * distance - 0.0006677889 * Math.pow(distance, 2) + 0.000003639036 * Math.pow(distance, 3) - 7.141361e-9 * Math.pow(distance, 4);
+        hoodServo.setPosition(hood_position); //Set Hood position
+        if (gamepad1.leftBumperWasPressed()) {
+            hood_position -= 0.025;
+        } else if (gamepad1.rightBumperWasPressed()) {
+            hood_position += 0.025;
+        }
+
+    //INTAKE AND LAUCHER SYSTEM
     boolean Intake = gamepad1.left_trigger > 0.1;
     boolean Launch = gamepad1.right_trigger > 0.1 && Math.abs(error) < 250;
 
@@ -259,17 +278,7 @@ public class DebugREDChassis extends OpMode {
 //        intakeServo.setPosition(intakePosition);
         }
 
-        if(gamepad1.xWasPressed()) { //Shooter
-        a++;
-    }
-        if(a %2==1) {
-        shooter1.setVelocity(shooter_power);
-        shooter2.setVelocity(shooter_power);
-    } else {
-        shooter1.setVelocity(0);
-        shooter2.setVelocity(0);
-    }
-
+        //TELEMETRIES
         telemetry.addData("P","%.5f (D-Pad U/D)",P);
         telemetry.addData("I","%.5f (D-Pad L/R)",I);
         telemetry.addData("Step Size","%.4f",stepSizes[stepIndex]);
@@ -289,6 +298,7 @@ public class DebugREDChassis extends OpMode {
         telemetry.addData("Hood",hood_position);
         telemetry.addData("TurretPower", turretPower);
         telemetry.addData("odo error",errorVision);
+        telemetry.addData("intake RPM", intakeRPM);
         telemetry.update();
 }
 }
