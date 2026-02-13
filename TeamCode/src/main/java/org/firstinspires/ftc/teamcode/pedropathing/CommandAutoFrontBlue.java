@@ -162,9 +162,9 @@ public class CommandAutoFrontBlue extends CommandOpMode {
 
             case 8: // Ponto final (EndPoint)
                 if (!stateInit) {
-                    robot.follower.followPath(paths.EndPoint);
-                    stateInit = true;
-                }
+                robot.follower.followPath(paths.EndPoint);
+                stateInit = true;
+            }
                 if (!robot.follower.isBusy()) {
                     setPathState(9);
                 }
