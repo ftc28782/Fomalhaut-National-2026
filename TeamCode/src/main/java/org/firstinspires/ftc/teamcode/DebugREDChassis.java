@@ -29,24 +29,31 @@ import java.util.concurrent.TimeUnit;
 //LAST REDDEBUGCHASSIS BEFORE SETPOWER CALIBRATION
 @TeleOp(name = "Red Alliance Teleop")
 public class DebugREDChassis extends OpMode {
-    private boolean hasVision;
-    Limelight3A limelightChassis;
-    public double TargetVelocity = 3500;
-    public double TicksPerRev = 28;
-    private double camX;
-    private double camY;
+
+    //FOLLOWER
     Follower follower;
-    private double errorVision;
-    private double hood_position = 0.5;
     GamepadEx driver;
+
+    //MOTORS AND SERVOS
     DcMotorEx shooter1, shooter2, intake, turretMotor = null;
     Servo hoodServo, intakeServo, transferServo = null;
+
+    //ENCODERS AND LL
+    Limelight3A limelightChassis;
+    private double camX;
+    private double camY;
+    private boolean hasVision;
+    private double errorVision;
+
+    // LOGICS
+    public double TargetVelocity = 3500;
+    public double TicksPerRev = 28;
     private double turretPower;
+    private double hood_position = 0.5;
     private final double GOAL_BLUE_X = -66, GOAL_BLUE_Y = 66;
     private double c = 0;
     Deadline IMUTimer;
-    private double odoX,odoY;
-    private double intakeRPM;
+    private double odoX, odoY;
     private double turretAngle;
     private double IMUDegress;
     PIDFController turretPID;
@@ -84,9 +91,6 @@ public class DebugREDChassis extends OpMode {
 
         //TURRET MOTOR
         turretMotor = hardwareMap.get(DcMotorEx.class, "turretMotor");
-
-        //TRANSFER SERVO
-//        transferServo = hardwareMap.get(Servo.class, "transferServo");
 
         //PINPOINT
         follower = Constants.createFollower(hardwareMap);
@@ -298,7 +302,6 @@ public class DebugREDChassis extends OpMode {
         telemetry.addData("Hood",hood_position);
         telemetry.addData("TurretPower", turretPower);
         telemetry.addData("odo error",errorVision);
-        telemetry.addData("intake RPM", intakeRPM);
         telemetry.update();
 }
 }
