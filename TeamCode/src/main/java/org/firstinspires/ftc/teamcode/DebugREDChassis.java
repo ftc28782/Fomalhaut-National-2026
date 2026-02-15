@@ -16,7 +16,6 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
-import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
@@ -42,7 +41,6 @@ public class DebugREDChassis extends OpMode {
     Limelight3A limelightChassis;
     private double camX;
     private double camY;
-    private boolean hasVision;
     private double errorVision;
 
     // LOGICS
@@ -68,11 +66,6 @@ public class DebugREDChassis extends OpMode {
     private double transferPosition, intakePosition;
     private boolean PDchange;
     PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, I, 0, 0);
-
-    /**
-     * ticks por grau (throughbore). Calibrado empiricamente.
-     * Se você girar -90° e ler -86.7°, aumente proporcionalmente.
-     */
 
     public void init() {
 
@@ -181,19 +174,28 @@ public class DebugREDChassis extends OpMode {
         turretPower = turretPID.calculate(angleToGoal);
 
         //TURRET SYSTEM
-
+        //OBS IMPORTNATE: O SINAL DO SETPOWER É SEMPRE O MESMO DO ÂNGULO
         if (turretPower >= 0) { //F from PIDF
             turretPower = turretPower + tF;
         } else {
             turretPower = turretPower - tF;
         }
 
+        //da pra fazer esse negocio aq:
+        //lembrando que os sinais do turretPower eu n faço ideia KKKKKKKKKK
+
         if (turretAngle > 115 && turretPower > 0) { //Inverti os > do turretPower < 0 denovo
-            turretPower = 0;
+            turretPower = Math.abs(turretPower);
         }
         if (turretAngle < -115 && turretPower < 0) {
-            turretPower = 0;
+            turretPower = -Math.abs(turretPower);
         }
+//        if (turretAngle > 115 && turretPower > 0) { //Inverti os > do turretPower < 0 denovo
+//            turretPower = 0;
+//        }
+//        if (turretAngle < -115 && turretPower < 0) {
+//            turretPower = 0;
+//        }
         if (Math.abs(angleToGoal) < 1) {
             turretPower = 0;
         }
