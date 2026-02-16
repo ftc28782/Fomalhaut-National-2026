@@ -275,7 +275,7 @@ public class DebugREDChassis extends OpMode {
     boolean Launch = gamepad1.right_trigger > 0.1 && Math.abs(error) < 250;
 
         if(Launch||Intake) {
-        intake.setPower(-1);
+        intake.setPower(1);
 //        transferServo.setPosition(transferPosition);
 //        intakeServo.setPosition(intakePosition);
     } else {
