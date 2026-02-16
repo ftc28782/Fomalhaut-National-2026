@@ -184,22 +184,22 @@ public class DebugREDChassis extends OpMode {
         //da pra fazer esse negocio aq:
         //lembrando que os sinais do turretPower eu n faço ideia KKKKKKKKKK
 
-        if (turretAngle > 115 && turretPower > 0) { //Inverti os > do turretPower < 0 denovo
-            turretPower = Math.abs(turretPower);
-        }
-        if (turretAngle < -115 && turretPower < 0) {
-            turretPower = -Math.abs(turretPower);
-        }
-//        if (turretAngle > 115 && turretPower > 0) { //Inverti os > do turretPower < 0 denovo
-//            turretPower = 0;
+//        if (turretAngle > 115 && turretPower > 0) { //Solução boa para o giro da turret que vou aplicar dps
+//            turretPower = Math.abs(turretPower);
 //        }
 //        if (turretAngle < -115 && turretPower < 0) {
-//            turretPower = 0;
+//            turretPower = -Math.abs(turretPower);
 //        }
+        if (turretAngle > 85 && turretPower > 0) {
+            turretPower = 0;
+        }
+        if (turretAngle < -85 && turretPower < 0) { //Angulo original era 115º
+            turretPower = 0;
+        }
         if (Math.abs(angleToGoal) < 1) {
             turretPower = 0;
         }
-        turretMotor.setPower(turretPower);
+//        turretMotor.setPower(turretPower);
 
         //PIDF CALIBRATOR
         double[] stepSizes = {10, 1, 0.1, 0.01, 0.001, 0.0001};
