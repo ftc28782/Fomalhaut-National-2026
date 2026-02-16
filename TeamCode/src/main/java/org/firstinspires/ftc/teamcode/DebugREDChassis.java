@@ -203,7 +203,7 @@ public class DebugREDChassis extends OpMode {
 
         //PIDF CALIBRATOR
         double[] stepSizes = {10, 1, 0.1, 0.01, 0.001, 0.0001};
-        if (gamepad1.bWasPressed()) {
+        if (gamepad1.yWasPressed()) {
             stepIndex = (stepIndex + 1) % stepSizes.length;
         }
 
@@ -288,7 +288,7 @@ public class DebugREDChassis extends OpMode {
         telemetry.addData("P","%.5f (D-Pad U/D)",P);
         telemetry.addData("I","%.5f (D-Pad L/R)",I);
         telemetry.addData("Step Size","%.4f",stepSizes[stepIndex]);
-        telemetry.addLine("B - StepSize Switch");
+        telemetry.addLine("Y - StepSize Switch");
         telemetry.addData("X LL",camX);
         telemetry.addData("Y LL",camY);
         telemetry.addData("FusedX",odoX);
