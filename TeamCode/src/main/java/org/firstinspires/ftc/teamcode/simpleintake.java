@@ -27,11 +27,11 @@ public class simpleintake extends OpMode {
         telemetry.addData("rpm", rpm);
         if (gamepad1.right_trigger > 0.1) {
             s1.setPower(0.5);
-            s2.setPower(-0.5);
+            s2.setPower(0.5);
         }
         if (gamepad1.left_trigger > 0.1) {
             s1.setPower(-0.5);
-            s2.setPower(0.5);
+            s2.setPower(-0.5);
         }
     }
 }
