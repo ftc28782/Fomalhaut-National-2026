@@ -245,7 +245,7 @@ public class DebugREDChassis extends OpMode {
 
 
     double Shooter1Vel = (shooter1.getVelocity() * 60 / TicksPerRev);
-    double Shooter2Vel = (shooter2.getVelocity() * 60 / TicksPerRev);
+    double Shooter2Vel = (-shooter2.getVelocity() * 60 / TicksPerRev);
     double CurrentVelocity = (Shooter1Vel + Shooter2Vel) / 2;
     double error = TargetVelocity - CurrentVelocity;
 
@@ -281,7 +281,7 @@ public class DebugREDChassis extends OpMode {
         transferServo.setPosition(0.7);
         }
         if(Launch||Intake) {
-        intake.setPower(-1);
+        intake.setPower(1);
     } else {
         intake.setPower(0);
         }
@@ -300,6 +300,8 @@ public class DebugREDChassis extends OpMode {
         telemetry.addData("Distance",distance);
         telemetry.addData("Shooter Error",error);
         telemetry.addData("Target Velocity",TargetVelocity);
+        telemetry.addData("Shooter1 RPM","%.2f",Shooter1Vel);
+        telemetry.addData("Shooter2 RPM","%.2f",Shooter2Vel);
         telemetry.addData("IMUAngle (B to reset)",IMUDegress);
         telemetry.addData("Turret Angle",turretAngle);
         telemetry.addData("Angle to Goal",angleToGoal);

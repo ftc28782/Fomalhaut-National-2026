@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 public class DTRightFrontPower1 extends OpMode {
 
     private DcMotorEx rightFront;
+    private final double TICKS_PER_REV = 537.6; // GoBilda 312 RPM
 
     @Override
     public void init() {
@@ -18,8 +19,11 @@ public class DTRightFrontPower1 extends OpMode {
     public void loop() {
         rightFront.setPower(1.0);
 
+        double rpm = (rightFront.getVelocity() / TICKS_PER_REV) * 60.0;
+
         telemetry.addData("Motor", "rightFront");
         telemetry.addData("Power", 1.0);
+        telemetry.addData("RPM", "%.2f", rpm);
         telemetry.update();
     }
 
