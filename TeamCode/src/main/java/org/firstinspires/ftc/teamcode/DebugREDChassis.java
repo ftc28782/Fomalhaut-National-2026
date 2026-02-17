@@ -35,7 +35,7 @@ public class DebugREDChassis extends OpMode {
 
     //MOTORS AND SERVOS
     DcMotorEx shooter1, shooter2, intake, turretMotor = null;
-    Servo hoodServo, intakeServo, transferServo = null;
+    Servo hoodServo, transferServo = null;
 
     //ENCODERS AND LL
     Limelight3A limelightChassis;
@@ -99,14 +99,14 @@ public class DebugREDChassis extends OpMode {
         limelightChassis.start();
 
         //MOTORS
-//        intakeServo = hardwareMap.get(Servo.class, "intakeServo");
-//        transferServo = hardwareMap.get(Servo.class, "transferServo");
+
         intake = hardwareMap.get(DcMotorEx.class, "intake");
         intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter1 = hardwareMap.get(DcMotorEx.class, "shooterMotor1");
         shooter2 = hardwareMap.get(DcMotorEx.class, "shooterMotor2");
         hoodServo = hardwareMap.get(Servo.class, "hoodServo");
+//      transferServo = hardwareMap.get(Servo.class, "transferServo");
         shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -277,11 +277,9 @@ public class DebugREDChassis extends OpMode {
         if(Launch||Intake) {
         intake.setPower(1);
 //        transferServo.setPosition(transferPosition);
-//        intakeServo.setPosition(intakePosition);
     } else {
         intake.setPower(0);
 //        transferServo.setPosition(transferPosition);
-//        intakeServo.setPosition(intakePosition);
         }
 
         //TELEMETRIES
@@ -293,6 +291,8 @@ public class DebugREDChassis extends OpMode {
         telemetry.addData("Y LL",camY);
         telemetry.addData("FusedX",odoX);
         telemetry.addData("FusedY",odoY);
+        telemetry.addData("X speed", follower.getVelocity().getXComponent());
+        telemetry.addData("Y speed", follower.getVelocity().getYComponent());
         telemetry.addData("Distance",distance);
         telemetry.addData("Shooter Error",error);
         telemetry.addData("Target Velocity",TargetVelocity);

@@ -26,10 +26,12 @@ public class simpleintake extends OpMode {
         double rpm = (intakeencoder.getVelocity() / 252.0) * 60.0;
         telemetry.addData("rpm", rpm);
         if (gamepad1.right_trigger > 0.1) {
-            s1.setPower(1);
+            s1.setPower(0.5);
+            s2.setPower(-0.5);
         }
         if (gamepad1.left_trigger > 0.1) {
-            s1.setPower(-1);
+            s1.setPower(-0.5);
+            s2.setPower(0.5);
         }
     }
 }

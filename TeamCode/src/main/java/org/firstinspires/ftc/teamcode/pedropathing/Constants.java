@@ -44,27 +44,21 @@ public class Constants {
     .xVelocity(60.755)
     .yVelocity(48.707); //mudar uns 2 inches na configuracao da limelight
 
-
-    public static TwoWheelConstants localizerConstants = new TwoWheelConstants()
-            .forwardPodY(-6.5)
+    public static PinpointConstants localizerConstants = new PinpointConstants()
+            .forwardPodY(7.5)
             .strafePodX(-1)
-            .forwardEncoderDirection(Encoder.FORWARD)
-            .strafeEncoderDirection(Encoder.FORWARD)
-            .forwardTicksToInches(0.001989436789)
-            .strafeTicksToInches(0.002000436789)
-            .forwardEncoder_HardwareMapName("backLeft")
-            .strafeEncoder_HardwareMapName("frontRight")
-            .IMU_HardwareMapName("imu")
-                .IMU_Orientation(
-                new RevHubOrientationOnRobot(
-                    RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-              RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
+            .distanceUnit(DistanceUnit.INCH)
+            .hardwareMapName("pinpoint")
+            .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
+            .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
+            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1.4, 1);
 
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .mecanumDrivetrain(driveConstants)
-                .twoWheelLocalizer(localizerConstants)
+                .pinpointLocalizer(localizerConstants)
+                .pathConstraints(pathConstraints)
                 .build();
     }
 }
