@@ -38,9 +38,9 @@ public class Constants {
     .rightFrontMotorName("frontRight")
     .rightRearMotorName("backRight")
     .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-    .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
     .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-    .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
     .xVelocity(60.755)
     .yVelocity(48.707); //mudar uns 2 inches na configuracao da limelight
 

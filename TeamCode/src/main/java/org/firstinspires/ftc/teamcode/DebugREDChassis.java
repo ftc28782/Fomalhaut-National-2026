@@ -47,7 +47,7 @@ public class DebugREDChassis extends OpMode {
     public double TargetVelocity = 3500;
     public double TicksPerRev = 28;
     private double turretPower;
-    private double hood_position = 0.5;
+    private double hoodPosition = 0.5;
     private final double GOAL_BLUE_X = -66, GOAL_BLUE_Y = 66;
     private double c = 0;
     Deadline IMUTimer;
@@ -63,7 +63,7 @@ public class DebugREDChassis extends OpMode {
     public int stepIndex = 1;
     private IMU imu;
     private double a;
-    private double transferPosition, intakePosition;
+    private double transferPosition = 0.7, intakePosition;
     private boolean PDchange;
     PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, I, 0, 0);
 
@@ -106,7 +106,7 @@ public class DebugREDChassis extends OpMode {
         shooter1 = hardwareMap.get(DcMotorEx.class, "shooterMotor1");
         shooter2 = hardwareMap.get(DcMotorEx.class, "shooterMotor2");
         hoodServo = hardwareMap.get(Servo.class, "hoodServo");
-//      transferServo = hardwareMap.get(Servo.class, "transferServo");
+        transferServo = hardwareMap.get(Servo.class, "transferServo");
         shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -211,22 +211,22 @@ public class DebugREDChassis extends OpMode {
             turretPID.setPIDF(tP, 0.0, tD, 0);
         }
         PDchange = false;
-        if (gamepad1.dpadLeftWasPressed()) {
-            intakePosition += stepSizes[stepIndex];
-             PDchange = true;
-        }
-        if (gamepad1.dpadRightWasPressed()) {
-            intakePosition -= stepSizes[stepIndex];
-             PDchange = true;
-        }
-        if (gamepad1.dpadUpWasPressed()) {
-            transferPosition += stepSizes[stepIndex];
-             PDchange = true;
-        }
-        if (gamepad1.dpadDownWasPressed()) {
-            transferPosition -= stepSizes[stepIndex];
-             PDchange = true;
-        }
+//        if (gamepad1.dpadLeftWasPressed()) {
+//            intakePosition += stepSizes[stepIndex];
+//             PDchange = true;
+//        }
+//        if (gamepad1.dpadRightWasPressed()) {
+//            intakePosition -= stepSizes[stepIndex];
+//             PDchange = true;
+//        }
+//        if (gamepad1.dpadUpWasPressed()) {
+//            transferPosition += stepSizes[stepIndex];
+//             PDchange = true;
+//        }
+//        if (gamepad1.dpadDownWasPressed()) {
+//            transferPosition -= stepSizes[stepIndex];
+//             PDchange = true;
+//        }
 
         //SHOOTER SYSTEM
         pidfCoefficients = new PIDFCoefficients(P, I, 0, 0);
@@ -262,24 +262,28 @@ public class DebugREDChassis extends OpMode {
         }
 
         //HOOD POSITION
-//        hood_position = -0.8909748 + 0.0521592 * distance - 0.0006677889 * Math.pow(distance, 2) + 0.000003639036 * Math.pow(distance, 3) - 7.141361e-9 * Math.pow(distance, 4);
-        hoodServo.setPosition(hood_position); //Set Hood position
+//        hoodPosition = -0.8909748 + 0.0521592 * distance - 0.0006677889 * Math.pow(distance, 2) + 0.000003639036 * Math.pow(distance, 3) - 7.141361e-9 * Math.pow(distance, 4);
+        hoodServo.setPosition(hoodPosition); //Set Hood position
+        transferServo.setPosition(transferPosition); //Set Transfer position
         if (gamepad1.leftBumperWasPressed()) {
-            hood_position -= 0.025;
+            hoodPosition = hoodPosition + 0.05;
         } else if (gamepad1.rightBumperWasPressed()) {
-            hood_position += 0.025;
+            hoodPosition = hoodPosition - 0.05;
         }
 
     //INTAKE AND LAUCHER SYSTEM
     boolean Intake = gamepad1.left_trigger > 0.1;
     boolean Launch = gamepad1.right_trigger > 0.1 && Math.abs(error) < 250;
 
+    if (Launch) {
+        transferServo.setPosition(0);
+    } else {
+        transferServo.setPosition(0.7);
+        }
         if(Launch||Intake) {
-        intake.setPower(1);
-//        transferServo.setPosition(transferPosition);
+        intake.setPower(-1);
     } else {
         intake.setPower(0);
-//        transferServo.setPosition(transferPosition);
         }
 
         //TELEMETRIES
@@ -301,7 +305,7 @@ public class DebugREDChassis extends OpMode {
         telemetry.addData("Angle to Goal",angleToGoal);
         telemetry.addData("transferPosition","%.5f (D-Pad U/D)",transferPosition);
         telemetry.addData("intakePosition","%.5f (D-Pad L/R)",intakePosition);
-        telemetry.addData("Hood",hood_position);
+        telemetry.addData("Hood",hoodPosition);
         telemetry.addData("TurretPower", turretPower);
         telemetry.addData("odo error",errorVision);
         telemetry.update();
