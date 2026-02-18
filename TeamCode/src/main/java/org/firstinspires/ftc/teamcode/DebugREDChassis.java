@@ -44,7 +44,7 @@ public class DebugREDChassis extends OpMode {
     private double errorVision;
 
     // LOGICS
-    public double TargetVelocity = 3500;
+    public double TargetVelocity = 3250; //rpm
     public double TicksPerRev = 28;
     private double turretPower;
     private double hoodPosition = 0.5;
@@ -59,7 +59,7 @@ public class DebugREDChassis extends OpMode {
     private double I = 0.7;
     private double tP = 0.022;
     private double tD = 0.0005;
-    private double tF = 0.11;
+    private double tF = 0;
     public int stepIndex = 1;
     private IMU imu;
     private double a;
@@ -211,22 +211,22 @@ public class DebugREDChassis extends OpMode {
             turretPID.setPIDF(tP, 0.0, tD, 0);
         }
         PDchange = false;
-//        if (gamepad1.dpadLeftWasPressed()) {
-//            intakePosition += stepSizes[stepIndex];
-//             PDchange = true;
-//        }
-//        if (gamepad1.dpadRightWasPressed()) {
-//            intakePosition -= stepSizes[stepIndex];
-//             PDchange = true;
-//        }
-//        if (gamepad1.dpadUpWasPressed()) {
-//            transferPosition += stepSizes[stepIndex];
-//             PDchange = true;
-//        }
-//        if (gamepad1.dpadDownWasPressed()) {
-//            transferPosition -= stepSizes[stepIndex];
-//             PDchange = true;
-//        }
+        if (gamepad1.dpadLeftWasPressed()) {
+            tP += stepSizes[stepIndex];
+             PDchange = true;
+        }
+        if (gamepad1.dpadRightWasPressed()) {
+            tP -= stepSizes[stepIndex];
+             PDchange = true;
+        }
+        if (gamepad1.dpadUpWasPressed()) {
+            tD += stepSizes[stepIndex];
+             PDchange = true;
+        }
+        if (gamepad1.dpadDownWasPressed()) {
+            tD -= stepSizes[stepIndex];
+             PDchange = true;
+        }
 
         //SHOOTER SYSTEM
         pidfCoefficients = new PIDFCoefficients(P, I, 0, 0);
@@ -266,9 +266,9 @@ public class DebugREDChassis extends OpMode {
         hoodServo.setPosition(hoodPosition); //Set Hood position
         transferServo.setPosition(transferPosition); //Set Transfer position
         if (gamepad1.leftBumperWasPressed()) {
-            hoodPosition = hoodPosition + 0.05;
+            hoodPosition = hoodPosition + 0.1;
         } else if (gamepad1.rightBumperWasPressed()) {
-            hoodPosition = hoodPosition - 0.05;
+            hoodPosition = hoodPosition - 0.1;
         }
 
     //INTAKE AND LAUCHER SYSTEM
@@ -289,8 +289,7 @@ public class DebugREDChassis extends OpMode {
         //TELEMETRIES
         telemetry.addData("P","%.5f (D-Pad U/D)",P);
         telemetry.addData("I","%.5f (D-Pad L/R)",I);
-        telemetry.addData("Step Size","%.4f",stepSizes[stepIndex]);
-        telemetry.addLine("Y - StepSize Switch");
+        telemetry.addData("Step Size (Y to switch)","%.4f",stepSizes[stepIndex]);
         telemetry.addData("X LL",camX);
         telemetry.addData("Y LL",camY);
         telemetry.addData("FusedX",odoX);
@@ -305,11 +304,11 @@ public class DebugREDChassis extends OpMode {
         telemetry.addData("IMUAngle (B to reset)",IMUDegress);
         telemetry.addData("Turret Angle",turretAngle);
         telemetry.addData("Angle to Goal",angleToGoal);
-        telemetry.addData("transferPosition","%.5f (D-Pad U/D)",transferPosition);
-        telemetry.addData("intakePosition","%.5f (D-Pad L/R)",intakePosition);
+        telemetry.addData("tP","%.5f (D-Pad U/D)",tP);
+        telemetry.addData("tD","%.5f (D-Pad L/R)",tD);
         telemetry.addData("Hood",hoodPosition);
         telemetry.addData("TurretPower", turretPower);
         telemetry.addData("odo error",errorVision);
         telemetry.update();
-}
+    }
 }
