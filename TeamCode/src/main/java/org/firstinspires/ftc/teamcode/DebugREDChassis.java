@@ -44,10 +44,10 @@ public class DebugREDChassis extends OpMode {
     private double errorVision;
 
     // LOGICS
-    public double TargetVelocity = 3250; //rpm
+    public double TargetVelocity = 3000; //rpm
     public double TicksPerRev = 28;
     private double turretPower;
-    private double hoodPosition = 0.5;
+    private double hoodPosition = 1;
     private final double GOAL_BLUE_X = -66, GOAL_BLUE_Y = 66;
     private double c = 0;
     Deadline IMUTimer;
@@ -56,11 +56,12 @@ public class DebugREDChassis extends OpMode {
     private double IMUDegress;
     PIDFController turretPID;
     private double P = 6;
-    private double I = 0.7;
+    private double I = 0.6;
     private double tP = 0.022;
     private double tD = 0.0005;
     private double tF = 0;
     public int stepIndex = 1;
+    DcMotorEx intakeencoder = null;
     private IMU imu;
     private double a;
     private double transferPosition = 0.7, intakePosition;
@@ -97,6 +98,9 @@ public class DebugREDChassis extends OpMode {
         limelightChassis = hardwareMap.get(Limelight3A.class, "limelightTurret");
         limelightChassis.pipelineSwitch(0);
         limelightChassis.start();
+
+        //INTAKE ENCODER
+        intakeencoder = hardwareMap.get(DcMotorEx.class, "backLeft");
 
         //MOTORS
 
@@ -233,7 +237,7 @@ public class DebugREDChassis extends OpMode {
         shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
 
-        TargetVelocity = 1364.45 + 21.20203 * distance - 0.03188598 * Math.pow(distance, 2);
+//        TargetVelocity = 1364.45 + 21.20203 * distance - 0.03188598 * Math.pow(distance, 2);
 //        if (gamepad1.dpadDownWasPressed()) {
 //            TargetVelocity = TargetVelocity - 100;
 //        }
@@ -273,9 +277,10 @@ public class DebugREDChassis extends OpMode {
 
     //INTAKE AND LAUCHER SYSTEM
     boolean Intake = gamepad1.left_trigger > 0.1;
-    boolean Launch = gamepad1.right_trigger > 0.1 && Math.abs(error) < 250;
+    boolean Launch = gamepad1.right_trigger > 0.1;
+    boolean Transfer = Math.abs(error) < 350;
 
-    if (Launch) {
+    if (Launch && Transfer) {
         transferServo.setPosition(0);
     } else {
         transferServo.setPosition(0.7);
@@ -309,6 +314,10 @@ public class DebugREDChassis extends OpMode {
         telemetry.addData("Hood",hoodPosition);
         telemetry.addData("TurretPower", turretPower);
         telemetry.addData("odo error",errorVision);
+
+        double rpm = (intakeencoder.getVelocity() / 112) * 60.0;
+        telemetry.addData("rpm", rpm);
+
         telemetry.update();
     }
 }

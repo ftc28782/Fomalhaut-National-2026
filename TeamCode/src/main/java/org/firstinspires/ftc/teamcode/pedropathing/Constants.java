@@ -24,9 +24,9 @@ public class Constants {
             .useSecondaryTranslationalPIDF(false)
             .useSecondaryHeadingPIDF(false)
             .useSecondaryDrivePIDF(false)
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.02, 0, 0.018, 0.035))
-            .headingPIDFCoefficients(new PIDFCoefficients(1, 0, 0.05, 0.02))
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.02,0.0,0.0003,0.6,0.0))
+            .translationalPIDFCoefficients(new PIDFCoefficients(1.2, 0, 0.065, 0.03))
+            .headingPIDFCoefficients(new PIDFCoefficients(2, 0, 0.05, 0.02))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.04,0.0,0.0005,1,0.0))
             .centripetalScaling(0.0005)
             .forwardZeroPowerAcceleration(-42.901)
             .lateralZeroPowerAcceleration(-67.8464);
@@ -39,10 +39,12 @@ public class Constants {
     .rightRearMotorName("backRight")
     .leftFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
     .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+    .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
+    .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
     .xVelocity(60.755)
-    .yVelocity(48.707); //mudar uns 2 inches na configuracao da limelight
+    .yVelocity(48.707)
+    .useBrakeModeInTeleOp(true);
+
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(7.5)
@@ -51,7 +53,7 @@ public class Constants {
             .hardwareMapName("pinpoint")
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
-            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
+            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1.4, 1);
 
     public static Follower createFollower(HardwareMap hardwareMap) {
@@ -62,4 +64,3 @@ public class Constants {
                 .build();
     }
 }
-//BEFORE TWO WHEEL CONSTANTS
