@@ -53,18 +53,15 @@ public class DebugREDChassis extends OpMode {
     Deadline IMUTimer;
     private double odoX, odoY;
     private double turretAngle;
-    private double IMUDegress;
     PIDFController turretPID;
     private double P = 6;
     private double I = 0.6;
-    private double tP = 0.022;
-    private double tD = 0.0005;
+    private double tP = 0.004;
+    private double tD = 0.0001;
     private double tF = 0;
+    private double a = 0;
     public int stepIndex = 1;
     DcMotorEx intakeencoder = null;
-    private IMU imu;
-    private double a;
-    private double transferPosition = 0.7, intakePosition;
     private boolean PDchange;
     PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, I, 0, 0);
 
@@ -73,15 +70,6 @@ public class DebugREDChassis extends OpMode {
         //TURRET PID
         turretPID = new PIDFController(tP, 0.0, tD, 0);
         turretPID.setTolerance(0);
-
-        //IMU
-        imu = hardwareMap.get(IMU.class, "imu");
-        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD
-        ));
-        imu.initialize(parameters);
-        IMUTimer = new Deadline(500, TimeUnit.MILLISECONDS);
 
         //TURRET MOTOR
         turretMotor = hardwareMap.get(DcMotorEx.class, "turretMotor");
@@ -125,22 +113,15 @@ public class DebugREDChassis extends OpMode {
         driver.readButtons(); // Process WasPressed events
 
         //THROUGHBORE ENCODER
-        turretAngle = (intake.getCurrentPosition() / 148.08);
+        turretAngle = (intake.getCurrentPosition() / 100.35);
 
-        //IMU
-        if (IMUTimer.hasExpired() && c < 1) {
-            imu.resetYaw();
-            IMUTimer.reset();
-            c = c + 1;
-        }
-        IMUDegress = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         follower.update();
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false, 1.5708);
 
 
 
         //LIMELIGHT
-        limelightChassis.updateRobotOrientation(IMUDegress);
+        limelightChassis.updateRobotOrientation(follower.getHeading());
 
         LLResult result = limelightChassis.getLatestResult();
         if (result != null && result.isValid()) {
@@ -155,11 +136,6 @@ public class DebugREDChassis extends OpMode {
             }
         }
 
-        //IMU RESET
-        if (gamepad1.bWasPressed()) {
-            imu.resetYaw();
-        }
-
         // PINPOINT
         Pose followerPose = follower.getPose();
         odoX = followerPose.getX();
@@ -171,10 +147,7 @@ public class DebugREDChassis extends OpMode {
 
         double distance = Math.hypot(dx, dy);
 
-        double angleToGoal = AngleUnit.normalizeDegrees(Math.toDegrees(Math.atan2(dy, dx)) - IMUDegress);
-
-        angleToGoal = AngleUnit.normalizeDegrees(angleToGoal - turretAngle);
-
+        double angleToGoal = Math.toDegrees(Math.atan2(dy, dx)) - AngleUnit.normalizeDegrees(Math.toDegrees(follower.getTotalHeading())) + turretAngle;
         turretPower = turretPID.calculate(angleToGoal);
 
         //TURRET SYSTEM
@@ -194,16 +167,16 @@ public class DebugREDChassis extends OpMode {
 //        if (turretAngle < -115 && turretPower < 0) {
 //            turretPower = -Math.abs(turretPower);
 //        }
-        if (turretAngle > 85 && turretPower > 0) {
+        if (turretAngle > 115 && turretPower > 0) {
             turretPower = 0;
         }
-        if (turretAngle < -85 && turretPower < 0) { //Angulo original era 115º
+        if (turretAngle < -115 && turretPower < 0) { //Angulo original era 115º
             turretPower = 0;
         }
         if (Math.abs(angleToGoal) < 1) {
             turretPower = 0;
         }
-//        turretMotor.setPower(turretPower);
+        turretMotor.setPower(turretPower);
 
         //PIDF CALIBRATOR
         double[] stepSizes = {10, 1, 0.1, 0.01, 0.001, 0.0001};
@@ -224,11 +197,11 @@ public class DebugREDChassis extends OpMode {
              PDchange = true;
         }
         if (gamepad1.dpadUpWasPressed()) {
-            tD += stepSizes[stepIndex];
+            tF += stepSizes[stepIndex];
              PDchange = true;
         }
         if (gamepad1.dpadDownWasPressed()) {
-            tD -= stepSizes[stepIndex];
+            tF -= stepSizes[stepIndex];
              PDchange = true;
         }
 
@@ -268,12 +241,11 @@ public class DebugREDChassis extends OpMode {
         //HOOD POSITION
 //        hoodPosition = -0.8909748 + 0.0521592 * distance - 0.0006677889 * Math.pow(distance, 2) + 0.000003639036 * Math.pow(distance, 3) - 7.141361e-9 * Math.pow(distance, 4);
         hoodServo.setPosition(hoodPosition); //Set Hood position
-        transferServo.setPosition(transferPosition); //Set Transfer position
-        if (gamepad1.leftBumperWasPressed()) {
-            hoodPosition = hoodPosition + 0.1;
-        } else if (gamepad1.rightBumperWasPressed()) {
-            hoodPosition = hoodPosition - 0.1;
-        }
+//        if (gamepad1.leftBumperWasPressed()) {
+//            hoodPosition = hoodPosition + 0.1;
+//        } else if (gamepad1.rightBumperWasPressed()) {
+//            hoodPosition = hoodPosition - 0.1;
+//        }
 
     //INTAKE AND LAUCHER SYSTEM
     boolean Intake = gamepad1.left_trigger > 0.1;
@@ -306,11 +278,11 @@ public class DebugREDChassis extends OpMode {
         telemetry.addData("Target Velocity",TargetVelocity);
         telemetry.addData("Shooter1 RPM","%.2f",Shooter1Vel);
         telemetry.addData("Shooter2 RPM","%.2f",Shooter2Vel);
-        telemetry.addData("IMUAngle (B to reset)",IMUDegress);
+        telemetry.addData("Heading (B to reset)",follower.getHeading());
         telemetry.addData("Turret Angle",turretAngle);
         telemetry.addData("Angle to Goal",angleToGoal);
         telemetry.addData("tP","%.5f (D-Pad U/D)",tP);
-        telemetry.addData("tD","%.5f (D-Pad L/R)",tD);
+        telemetry.addData("tF","%.5f (D-Pad L/R)",tF);
         telemetry.addData("Hood",hoodPosition);
         telemetry.addData("TurretPower", turretPower);
         telemetry.addData("odo error",errorVision);
