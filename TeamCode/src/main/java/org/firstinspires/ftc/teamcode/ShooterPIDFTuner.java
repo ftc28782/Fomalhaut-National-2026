@@ -26,7 +26,7 @@ public class ShooterPIDFTuner extends OpMode {
         shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter1.setDirection(DcMotorSimple.Direction.FORWARD);
-        shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooter2.setDirection(DcMotorSimple.Direction.FORWARD);
         PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P,I,0,0);
         shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
@@ -66,12 +66,14 @@ public class ShooterPIDFTuner extends OpMode {
         shooter2.setVelocity(TargetVelocity * TicksPerRev / 60);
 
         double Shooter1Vel = (shooter1.getVelocity() * 60 / TicksPerRev);
-        double Shooter2Vel = (shooter2.getVelocity() * 60 / TicksPerRev);
+        double Shooter2Vel = (-shooter2.getVelocity() * 60 / TicksPerRev);
         double CurrentVelocity = (Shooter1Vel + Shooter2Vel) / 2;
         double error = TargetVelocity - CurrentVelocity;
 
         telemetry.addData("Target Velocity", TargetVelocity);
         telemetry.addData("Current Velocity", "%.2f", CurrentVelocity);
+        telemetry.addData("Shooter1 RPM","%.2f",Shooter1Vel);
+        telemetry.addData("Shooter2 RPM","%.2f",Shooter2Vel);
         telemetry.addData("Error","%.2f",error);
         telemetry.addLine("------------------------------------------");
         telemetry.addData("P","%.5f (D-Pad U/D)",P);
