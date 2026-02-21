@@ -21,8 +21,8 @@ public class FlywheelSubsystem extends SubsystemBase {
     public static final double TICKS_PER_REV = 28;
 
     // PIDF coefficients for shooter motors
-    public static final PIDFCoefficients SHOOTER_PIDF = new PIDFCoefficients(6, 0.7, 0, 0);
-    private double targetVelocityRPM = 3200;
+    public static final PIDFCoefficients SHOOTER_PIDF = new PIDFCoefficients(60, 0.0079, 0, 0);
+    private double targetVelocityRPM = 3100;
     private double hoodPosition = 1;
     private boolean isRunning = false;
 
@@ -35,7 +35,7 @@ public class FlywheelSubsystem extends SubsystemBase {
         shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter1.setDirection(DcMotorSimple.Direction.FORWARD);
-        shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooter2.setDirection(DcMotorSimple.Direction.FORWARD);
 
         // Set PIDF coefficients
         shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, SHOOTER_PIDF);
@@ -44,10 +44,7 @@ public class FlywheelSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Update hood position
-        hoodServo.setPosition(hoodPosition);
     }
-
     /**
      * Set the target velocity in RPM and run the flywheel.
      * @param rpm Target velocity in RPM
@@ -65,7 +62,22 @@ public class FlywheelSubsystem extends SubsystemBase {
      * @param distance Distance to goal in inches
      */
     public void setVelocityForDistance(double distance) {
-        double rpm = (1364.45+150) + 21.20203*distance - 0.03188598*Math.pow(distance, 2);
+
+        double rpm = 2991.758
+                - 66.95706 * distance
+                + 2.195716 * Math.pow(distance, 2)
+                - 0.02787701 * Math.pow(distance, 3)
+                + 0.0001660626 * Math.pow(distance, 4)
+                - 3.770099e-7 * Math.pow(distance, 5);
+        if (distance > 36) {
+        hoodPosition = 0.000123486 * Math.pow(distance, 3)
+                - 0.0153796 * Math.pow(distance, 2)
+                + 0.591463 * distance
+                - 6.03862;
+        } else {
+            hoodPosition = 0;
+        }
+        hoodServo.setPosition(hoodPosition);
         targetVelocityRPM = rpm;
         if (isRunning) {
             setVelocityRPM(rpm);
@@ -147,12 +159,8 @@ public class FlywheelSubsystem extends SubsystemBase {
         return targetVelocityRPM - getAverageVelocityRPM();
     }
 
-    /**
-     * Check if flywheel is at target velocity (within tolerance).
-     * @param tolerance Acceptable error in RPM
-     */
-    public boolean isAtTargetVelocity(double tolerance) {
-        return Math.abs(getVelocityError()) < tolerance;
+    public boolean isAtTargetVelocity() {
+        return Math.abs(getVelocityError()) < 285;
     }
 
     /**

@@ -16,17 +16,12 @@ public class TurretSubsystem extends SubsystemBase {
     private final PIDFController turretPID;
 
     // PID Constants
-    public static double kP = 0.014;
-    public static double kD = 0.0015;
-    public static double kF = 0.3;
-
-
-    // Turret limits in degrees
-    public static final double MAX_ANGLE = 115;
-    public static final double MIN_ANGLE = -115;
+    public static double kP = 0.024;
+    public static double kD = 0.0001;
+    public static double kF = 0;
 
     // Encoder ticks to degrees conversion
-    private static final double TICKS_TO_DEGREES = 130.2;
+    private static final double TICKS_TO_DEGREES = 100.35;
 
     private double currentAngle = 0;
     private double lastPower = 0;
@@ -52,10 +47,10 @@ public class TurretSubsystem extends SubsystemBase {
      */
     public void setPower(double power) {
         // Apply limits
-        if (currentAngle > MAX_ANGLE && power > 0) {
+        if (currentAngle > 115 && power > 0) {
             power = 0;
         }
-        if (currentAngle < MIN_ANGLE && power < 0) {
+        if (currentAngle < -45 && power < 0) {
             power = 0;
         }
         if (power >= 0) {
@@ -73,7 +68,7 @@ public class TurretSubsystem extends SubsystemBase {
      * @return The calculated power
      */
     public double calculatePIDPower(double angleError) {
-        if (Math.abs(angleError) < 0.6) {
+        if (Math.abs(angleError) < 1) {
             angleError = 0;
         }
         return turretPID.calculate(angleError);

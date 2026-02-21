@@ -28,13 +28,10 @@ public class CommandAutoFrontBlue extends CommandOpMode {
     private boolean stateInit, arrived = false;
     private Timer pathTimer;
     private int pathState = 0;
-    public Pose startPose = new Pose(42.000, 136.000, Math.toRadians(0));
+    public Pose startPose = new Pose(40, 136.000, Math.toRadians(0));
 
     @Override
     public void initialize() {
-
-        //Set Alliance
-        robot.setAlliance(Robot.Alliance.AUTO_BLUE);
 
         // Initialize robot, timer, and paths
         robot = new Robot(hardwareMap,startPose);
@@ -192,7 +189,7 @@ public class CommandAutoFrontBlue extends CommandOpMode {
         if (arrived) {
             Shoot();
         }
-        if (!robot.follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 4) {
+        if (!robot.follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 3) {
             endShoot();
             pathState = newState;
             stateInit = false;
@@ -201,12 +198,11 @@ public class CommandAutoFrontBlue extends CommandOpMode {
         }
     }
     public void Shoot() {
-        if (robot.flywheel.isAtTargetVelocity(250)) {
-            robot.intake.setPower(1);
-            robot.transfer.setPower(1);
+        robot.intake.setPower(1);
+        if (robot.flywheel.isAtTargetVelocity()) {
+            robot.transfer.runForward();
         } else {
             // Se a velocidade cair (ex: após o primeiro disco sair), ele para e espera recuperar
-            robot.intake.stop();
             robot.transfer.stop();
         }
     }

@@ -55,7 +55,7 @@ public class ShootForTimeCommand extends CommandBase {
 
     @Override
     public void execute() {
-        if (flywheel.isAtTargetVelocity(velocityTolerance)) {
+        if (flywheel.isAtTargetVelocity()) {
             intake.runForward();
             transfer.runForward();
         } else {

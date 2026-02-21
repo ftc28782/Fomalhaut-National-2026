@@ -40,6 +40,7 @@ public class DebugREDChassis extends OpMode {
     //ENCODERS AND LL
     Limelight3A limelightChassis;
     private double camX;
+    private double heading;
     private double camY;
     private double errorVision;
 
@@ -48,7 +49,7 @@ public class DebugREDChassis extends OpMode {
     public double TicksPerRev = 28;
     private double turretPower;
     private double hoodPosition = 1;
-    private final double GOAL_BLUE_X = -66, GOAL_BLUE_Y = 66;
+    private final double GOAL_BLUE_X = -66, GOAL_BLUE_Y = -66;
     private double c = 0;
     Deadline IMUTimer;
     private double odoX, odoY;
@@ -60,6 +61,9 @@ public class DebugREDChassis extends OpMode {
     private double tD = 0.0001;
     private double tF = 0;
     private double a = 0;
+    private double xGoalOffset;
+    private double yGoalOffset;
+    private double distance;
     public int stepIndex = 1;
     DcMotorEx intakeencoder = null;
     private boolean PDchange;
@@ -136,18 +140,42 @@ public class DebugREDChassis extends OpMode {
             }
         }
 
+        //HEADING RESET
+        if (gamepad1.b) {
+            follower.setPose(new Pose(follower.getPose().getX(), follower.getPose().getY(), Math.toRadians(0)));
+        }
+
         // PINPOINT
         Pose followerPose = follower.getPose();
         odoX = followerPose.getX();
         odoY = followerPose.getY();
 
-        //GOAL AND ANGLETOGOAL CALCULATIONS
-        double dx = GOAL_BLUE_X - odoX;
-        double dy = GOAL_BLUE_Y - odoY;
+        //GOAL AND ANGLETOGOAL CALCULATIONS WITHOU SHOOTING WHILE MOVING
+//        double dx = GOAL_BLUE_X - odoX;
+//        double dy = GOAL_BLUE_Y - odoY;
+//
+//        double distance = Math.hypot(dx, dy);
+//
+//        heading = Math.toDegrees(AngleUnit.normalizeDegrees(follower.getHeading()));
+//
+//        double angleToGoal = Math.toDegrees(Math.atan2(dy, dx)) - Math.toDegrees(AngleUnit.normalizeDegrees(follower.getHeading())) + turretAngle;
+//        turretPower = turretPID.calculate(angleToGoal);
 
-        double distance = Math.hypot(dx, dy);
 
-        double angleToGoal = Math.toDegrees(Math.atan2(dy, dx)) - Math.toDegrees(follower.getTotalHeading()) + turretAngle;
+        //SHOOTING WHILE MOVING
+        double shotTime = 1;
+        xGoalOffset = GOAL_BLUE_X - follower.getVelocity().getXComponent() * shotTime;
+        yGoalOffset = GOAL_BLUE_Y - follower.getVelocity().getYComponent() * shotTime;
+
+        //GOAL AND ANGLETOGOAL CALCULATIONS WITH SHOOTING WHILE MOVING
+        double dx = xGoalOffset - odoX;
+        double dy = yGoalOffset - odoY;
+
+        distance = Math.hypot(dx, dy);
+
+        heading = Math.toDegrees(follower.getHeading());
+
+        double angleToGoal = Math.toDegrees(Math.atan2(dy, dx)) - heading + turretAngle;
         turretPower = turretPID.calculate(angleToGoal);
 
         //TURRET SYSTEM
@@ -167,6 +195,7 @@ public class DebugREDChassis extends OpMode {
 //        if (turretAngle < -115 && turretPower < 0) {
 //            turretPower = -Math.abs(turretPower);
 //        }
+
         if (turretAngle > 115 && turretPower > 0) {
             turretPower = 0;
         }
@@ -210,7 +239,6 @@ public class DebugREDChassis extends OpMode {
         shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
 
-//        TargetVelocity = 1364.45 + 21.20203 * distance - 0.03188598 * Math.pow(distance, 2);
 //        if (gamepad1.dpadDownWasPressed()) {
 //            TargetVelocity = TargetVelocity - 100;
 //        }
@@ -252,11 +280,11 @@ public class DebugREDChassis extends OpMode {
                 - 6.03862;
 
         hoodServo.setPosition(hoodPosition); //Set Hood position
-        if (gamepad1.leftBumperWasPressed()) {
-            hoodPosition = hoodPosition + 0.1;
-        } else if (gamepad1.rightBumperWasPressed()) {
-            hoodPosition = hoodPosition - 0.1;
-        }
+//        if (gamepad1.leftBumperWasPressed()) {
+//            hoodPosition = hoodPosition + 0.1;
+//        } else if (gamepad1.rightBumperWasPressed()) {
+//            hoodPosition = hoodPosition - 0.1;
+//        }
 
     //INTAKE AND LAUCHER SYSTEM
     boolean Intake = gamepad1.left_trigger > 0.1;
@@ -284,18 +312,21 @@ public class DebugREDChassis extends OpMode {
         telemetry.addData("FusedY",odoY);
         telemetry.addData("X speed", follower.getVelocity().getXComponent());
         telemetry.addData("Y speed", follower.getVelocity().getYComponent());
+        telemetry.addData("X offset", xGoalOffset);
+        telemetry.addData("Y offset", yGoalOffset);
         telemetry.addData("Distance",distance);
         telemetry.addData("Shooter Error",error);
         telemetry.addData("Target Velocity",targetVelocity);
         telemetry.addData("Shooter1 RPM","%.2f",Shooter1Vel);
         telemetry.addData("Shooter2 RPM","%.2f",Shooter2Vel);
-        telemetry.addData("Heading (B to reset)",follower.getHeading());
+        telemetry.addData("Heading (B to reset)",Math.toDegrees(follower.getHeading()));
+        telemetry.addData("Robot Heading",heading);
         telemetry.addData("Turret Angle",turretAngle);
         telemetry.addData("Angle to Goal",angleToGoal);
         telemetry.addData("tP","%.5f (D-Pad U/D)",tP);
         telemetry.addData("tF","%.5f (D-Pad L/R)",tF);
         telemetry.addData("Hood",hoodPosition);
-        telemetry.addData("TurretPower", turretPower);
+        telemetry.addData("TurretPower",turretPower);
         telemetry.addData("odo error",errorVision);
 
         double rpm = (intakeencoder.getVelocity() / 252) * 60.0;

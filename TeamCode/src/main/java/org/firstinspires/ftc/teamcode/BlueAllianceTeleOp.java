@@ -70,12 +70,18 @@ public class BlueAllianceTeleOp extends CommandOpMode {
                 -gamepad1.right_stick_x);
 
         boolean triggerIntake = gamepad1.left_trigger > 0.1;
-        boolean shooting = gamepad1.a && robot.flywheel.isAtTargetVelocity(250);
-        boolean forceFeed = gamepad1.b;
+        boolean shootingIntake = gamepad1.right_trigger > 0.1;
+        boolean shooting = gamepad1.right_trigger > 0.1 && robot.flywheel.isAtTargetVelocity();
 
-        if (triggerIntake && !shooting && !forceFeed) {
+
+        if (shooting) {
+            robot.transfer.runForward();
+            } else {
+            robot.transfer.stop();
+        }
+        if (triggerIntake || shootingIntake) {
             robot.intake.setPower(1);
-        } else if (!shooting && !forceFeed) {
+        } else {
             robot.intake.stop();
         }
 
@@ -94,8 +100,7 @@ public class BlueAllianceTeleOp extends CommandOpMode {
         telemetry.addData("Distance", robot.getDistanceToGoal());
         telemetry.addData("Shooter Error", robot.flywheel.getVelocityError());
         telemetry.addData("Target Velocity", robot.flywheel.getTargetVelocityRPM());
-        telemetry.addData("Fixed IMUAngle", robot.FixedIMUDegrees());
-        telemetry.addData("IMUAngle", robot.getHeadingDegrees());
+        telemetry.addData("Heading", robot.getHeadingDegrees());
         telemetry.addData("Turret Angle", robot.turret.getCurrentAngle());
         telemetry.addData("Angle to Goal", robot.getAngleToGoal());
         telemetry.update();

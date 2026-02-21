@@ -8,7 +8,6 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.FlywheelSubsystem;
@@ -46,11 +45,6 @@ public class Robot {
     private boolean hasVision = false;
     private double distanceToGoal = 0;
     private double angleToGoal = 0;
-
-    // Alpha filter constant for vision fusion
-    private double alphaXY = 0.08;
-    private double imuDegrees;
-    Pose followerPose;
     public enum Alliance {
         AUTO_BLUE,
         AUTO_RED,
@@ -144,13 +138,9 @@ public class Robot {
         distanceToGoal = Math.hypot(dx, dy);
 
         // Calculate angle to goal relative to turret
-        imuDegrees = normalizeDegrees(getHeadingDegrees());
         double turretAngle = turret.getCurrentAngle();
-        angleToGoal = AngleUnit.normalizeDegrees(Math.toDegrees(Math.atan2(dy, dx)) - imuDegrees - turretAngle);
+        angleToGoal = Math.toDegrees(Math.atan2(dy, dx)) - Math.toDegrees(follower.getTotalHeading()) + turretAngle;
     }
-        public double FixedIMUDegrees() {
-        return imuDegrees;
-        }
 
     /**
      * Sets the alliance to adjust drive orientation and goal position.
@@ -169,15 +159,6 @@ public class Robot {
         } else if (alliance == Alliance.AUTO_RED){
             setGoal(136, 136);
         }
-    }
-    /**
-     * Normaliza um ângulo em graus para o intervalo [-180, 180).
-     */
-    public static double normalizeDegrees(double degrees) {
-        degrees %= 360.0;
-        if (degrees >= 180.0) degrees -= 360.0;
-        if (degrees < -180.0) degrees += 360.0;
-        return degrees;
     }
     /**
      * Get IMU yaw in degrees.
@@ -257,16 +238,6 @@ public class Robot {
     public double getGoalY() {
         return goalY;
     }
-
-    /**
-     * Set the alpha filter constant for vision fusion.
-     *
-     * @param alpha Alpha value (0-1)
-     */
-    public void setAlphaXY(double alpha) {
-        this.alphaXY = alpha;
-    }
-
     /**
      * Start teleop driving mode.
      */

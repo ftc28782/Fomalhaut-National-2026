@@ -39,12 +39,12 @@ public class ShootCommand extends CommandBase {
      */
     public ShootCommand(IntakeSubsystem intake, TransferSubsystem transfer,
                         FlywheelSubsystem flywheel) {
-        this(intake, transfer, flywheel, 300);
+        this(intake, transfer, flywheel, 285);
     }
 
     @Override
     public void execute() {
-        if (flywheel.isAtTargetVelocity(velocityTolerance)) {
+        if (flywheel.isAtTargetVelocity()) {
             intake.runForward();
             transfer.runForward();
         } else {
