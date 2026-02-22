@@ -18,6 +18,7 @@ import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
@@ -61,6 +62,8 @@ public class DebugREDChassis extends OpMode {
     private double tD = 0.0001;
     private double tF = 0;
     private double a = 0;
+    DcMotorEx g,h,i,j;
+
     private double xGoalOffset;
     private double yGoalOffset;
     private double distance;
@@ -96,6 +99,10 @@ public class DebugREDChassis extends OpMode {
 
         //MOTORS
 
+        g = hardwareMap.get(DcMotorEx.class,"frontLeft");
+        h = hardwareMap.get(DcMotorEx.class,"backLeft");
+        i = hardwareMap.get(DcMotorEx.class,"frontRight");
+        j = hardwareMap.get(DcMotorEx.class,"backRight");
         intake = hardwareMap.get(DcMotorEx.class, "intake");
         intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -303,6 +310,20 @@ public class DebugREDChassis extends OpMode {
         }
 
         //TELEMETRIES
+        telemetry.addData("shooter1",shooter1.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("shooter2",shooter2.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("turretMotor",turretMotor.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("drive",g.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("drive",h.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("drive",i.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("drive",j.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("intake", intake.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("all current",(shooter1.getCurrent(CurrentUnit.AMPS) + shooter2.getCurrent(CurrentUnit.AMPS) +
+                turretMotor.getCurrent(CurrentUnit.AMPS) + g.getCurrent(CurrentUnit.AMPS) +
+                h.getCurrent(CurrentUnit.AMPS) + i.getCurrent(CurrentUnit.AMPS)+
+                j.getCurrent(CurrentUnit.AMPS) + intake.getCurrent(CurrentUnit.AMPS)));
+
+
         telemetry.addData("P","%.5f (D-Pad U/D)",P);
         telemetry.addData("I","%.5f (D-Pad L/R)",I);
         telemetry.addData("Step Size (Y to switch)","%.4f",stepSizes[stepIndex]);
