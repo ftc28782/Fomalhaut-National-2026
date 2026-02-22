@@ -11,8 +11,8 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 public class ShooterPIDFTuner extends OpMode {
 
     public DcMotorEx shooter1,shooter2;
-    public double FullSpeed = 3800; //rpm
-    public double HalfSpeed = 2000; //rpm
+    public double FullSpeed = 3600; //rpm
+    public double HalfSpeed = 1500; //rpm
     public double TicksPerRev = 28;
     double TargetVelocity = HalfSpeed;
     double I = 0;
@@ -26,7 +26,7 @@ public class ShooterPIDFTuner extends OpMode {
         shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter1.setDirection(DcMotorSimple.Direction.FORWARD);
-        shooter2.setDirection(DcMotorSimple.Direction.FORWARD);
+        shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
         PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P,I,0,0);
         shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
@@ -66,7 +66,7 @@ public class ShooterPIDFTuner extends OpMode {
         shooter2.setVelocity(TargetVelocity * TicksPerRev / 60);
 
         double Shooter1Vel = (shooter1.getVelocity() * 60 / TicksPerRev);
-        double Shooter2Vel = (-shooter2.getVelocity() * 60 / TicksPerRev);
+        double Shooter2Vel = (shooter2.getVelocity() * 60 / TicksPerRev);
         double CurrentVelocity = (Shooter1Vel + Shooter2Vel) / 2;
         double error = TargetVelocity - CurrentVelocity;
 

@@ -23,9 +23,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
 
-import java.util.concurrent.TimeUnit;
-
-
 //LAST REDDEBUGCHASSIS BEFORE SETPOWER CALIBRATION
 @TeleOp(name = "Red Alliance Teleop")
 public class DebugREDChassis extends OpMode {
@@ -56,8 +53,8 @@ public class DebugREDChassis extends OpMode {
     private double odoX, odoY;
     private double turretAngle;
     PIDFController turretPID;
-    private double P = 60;
-    private double I = 0.0079;
+    private double P = 90;
+    private double I = 0.36;
     private double tP = 0.024;
     private double tD = 0.0001;
     private double tF = 0;
@@ -113,13 +110,12 @@ public class DebugREDChassis extends OpMode {
         shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter1.setDirection(DcMotorSimple.Direction.FORWARD);
-        shooter2.setDirection(DcMotorSimple.Direction.FORWARD);
+        shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
         shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
     }
 
     public void loop() {
-
         // UPDATE DRIVER INPUTS
         driver.readButtons(); // Process WasPressed events
 
@@ -224,22 +220,22 @@ public class DebugREDChassis extends OpMode {
             turretPID.setPIDF(tP, 0.0, tD, 0);
         }
         PDchange = false;
-//        if (gamepad1.dpadLeftWasPressed()) {
-//            tP += stepSizes[stepIndex];
-//             PDchange = true;
-//        }
-//        if (gamepad1.dpadRightWasPressed()) {
-//            tP -= stepSizes[stepIndex];
-//             PDchange = true;
-//        }
-//        if (gamepad1.dpadUpWasPressed()) {
-//            tF += stepSizes[stepIndex];
-//             PDchange = true;
-//        }
-//        if (gamepad1.dpadDownWasPressed()) {
-//            tF -= stepSizes[stepIndex];
-//             PDchange = true;
-//        }
+        if (gamepad1.dpadLeftWasPressed()) {
+            P += stepSizes[stepIndex];
+             PDchange = true;
+        }
+        if (gamepad1.dpadRightWasPressed()) {
+            P -= stepSizes[stepIndex];
+             PDchange = true;
+        }
+        if (gamepad1.dpadUpWasPressed()) {
+            I += stepSizes[stepIndex];
+             PDchange = true;
+        }
+        if (gamepad1.dpadDownWasPressed()) {
+            I -= stepSizes[stepIndex];
+             PDchange = true;
+        }
 
         //SHOOTER SYSTEM
         pidfCoefficients = new PIDFCoefficients(P, I, 0, 0);
@@ -257,7 +253,7 @@ public class DebugREDChassis extends OpMode {
 
 
     double Shooter1Vel = (shooter1.getVelocity() * 60 / TicksPerRev);
-    double Shooter2Vel = (-shooter2.getVelocity() * 60 / TicksPerRev);
+    double Shooter2Vel = (shooter2.getVelocity() * 60 / TicksPerRev);
     double CurrentVelocity = (Shooter1Vel + Shooter2Vel) / 2;
     double error = targetVelocity - CurrentVelocity;
 
@@ -274,17 +270,9 @@ public class DebugREDChassis extends OpMode {
         }
 
         //HOOD POSITION
-        targetVelocity = 2991.758
-                - 66.95706 * distance
-                + 2.195716 * Math.pow(distance, 2)
-                - 0.02787701 * Math.pow(distance, 3)
-                + 0.0001660626 * Math.pow(distance, 4)
-                - 3.770099e-7 * Math.pow(distance, 5);
+        targetVelocity = 270994600 + (2379.938 - 270994600) / Math.pow(1 + Math.pow(distance / 46.8324, 5.934918), 7.048393e-7);
 
-        hoodPosition = 0.000123486 * Math.pow(distance, 3)
-                - 0.0153796 * Math.pow(distance, 2)
-                + 0.591463 * distance
-                - 6.03862;
+        hoodPosition = 0.7095078 + (-5.543509e-7 - 0.7095078) / (1 + Math.pow(distance / 46.85587, 50.72565));
 
         hoodServo.setPosition(hoodPosition); //Set Hood position
 //        if (gamepad1.leftBumperWasPressed()) {
