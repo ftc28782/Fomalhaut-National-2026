@@ -48,7 +48,6 @@ public class DebugREDChassis extends OpMode {
     private double turretPower;
     private double hoodPosition = 1;
     private final double GOAL_BLUE_X = -66, GOAL_BLUE_Y = -66;
-    private double c = 0;
     Deadline IMUTimer;
     private double odoX, odoY;
     private double turretAngle;
@@ -103,6 +102,7 @@ public class DebugREDChassis extends OpMode {
         intake = hardwareMap.get(DcMotorEx.class, "intake");
         intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         shooter1 = hardwareMap.get(DcMotorEx.class, "shooterMotor1");
         shooter2 = hardwareMap.get(DcMotorEx.class, "shooterMotor2");
         hoodServo = hardwareMap.get(Servo.class, "hoodServo");
@@ -252,9 +252,8 @@ public class DebugREDChassis extends OpMode {
     double shooter_power = (targetVelocity * TicksPerRev / 60);
 
 
-    double Shooter1Vel = (shooter1.getVelocity() * 60 / TicksPerRev);
-    double Shooter2Vel = (shooter2.getVelocity() * 60 / TicksPerRev);
-    double CurrentVelocity = (Shooter1Vel + Shooter2Vel) / 2;
+    double ShooterVel = (shooter1.getVelocity() * 60 / TicksPerRev);
+    double CurrentVelocity = ShooterVel;
     double error = targetVelocity - CurrentVelocity;
 
         if(gamepad1.xWasPressed()) {
@@ -272,7 +271,7 @@ public class DebugREDChassis extends OpMode {
         //HOOD POSITION
         targetVelocity = 270994600 + (2379.938 - 270994600) / Math.pow(1 + Math.pow(distance / 46.8324, 5.934918), 7.048393e-7);
 
-        hoodPosition = 0.7095078 + (-5.543509e-7 - 0.7095078) / (1 + Math.pow(distance / 46.85587, 50.72565));
+        hoodPosition = 1.000169 + (-0.0006164855 - 1.000169) / (1 + Math.pow(distance / 49.03941, 21.62445));
 
         hoodServo.setPosition(hoodPosition); //Set Hood position
 //        if (gamepad1.leftBumperWasPressed()) {
@@ -326,8 +325,7 @@ public class DebugREDChassis extends OpMode {
         telemetry.addData("Distance",distance);
         telemetry.addData("Shooter Error",error);
         telemetry.addData("Target Velocity",targetVelocity);
-        telemetry.addData("Shooter1 RPM","%.2f",Shooter1Vel);
-        telemetry.addData("Shooter2 RPM","%.2f",Shooter2Vel);
+        telemetry.addData("Shooter RPM","%.2f",ShooterVel);
         telemetry.addData("Heading (B to reset)",Math.toDegrees(follower.getHeading()));
         telemetry.addData("Robot Heading",heading);
         telemetry.addData("Turret Angle",turretAngle);
