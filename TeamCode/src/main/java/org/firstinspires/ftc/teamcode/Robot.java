@@ -8,6 +8,7 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.FlywheelSubsystem;
@@ -70,7 +71,6 @@ public class Robot {
         // Initialize Limelight
         limelight = hardwareMap.get(Limelight3A.class, "limelightTurret");
         limelight.pipelineSwitch(0);
-        limelight.setPollRateHz(100);
         limelight.start();
     }
 
@@ -98,7 +98,6 @@ public class Robot {
 
         // Update follower
         follower.update();
-        follower.getPose().getAsCoordinateSystem(PedroCoordinates.INSTANCE);
 
         // Update limelight orientation
         limelight.updateRobotOrientation(getHeadingDegrees());
@@ -120,7 +119,7 @@ public class Robot {
                 camX = (camPose3D.getPosition().x * 39.3701);
                 camY = (camPose3D.getPosition().y * 39.3701);
                     double errorVision = Math.hypot(camX - follower.getPose().getX(), camY - follower.getPose().getY());
-                if (errorVision > 3) {
+                if (errorVision > 3) { //isso aqui é pra ser substituido pela correção pelo controle, mantendoo error > 3 como condição
                     follower.setPose(new Pose(camX,camY,follower.getHeading()));
                     hasVision = true;
                 }
@@ -132,14 +131,21 @@ public class Robot {
      * Calculate distance and angle to the goal.
      */
     private void calculateGoalMetrics() {
-        double dx = goalX - follower.getPose().getX();
-        double dy = goalY - follower.getPose().getY();
+        //SHOOTING WHILE MOVING
+        double shotTime= 1;
+        // Use the currently-set goal coordinates (goalX, goalY) instead of GOAL_BLUE_X/GOAL_BLUE_Y
+        double xGoalOffset = goalX - follower.getVelocity().getXComponent() * shotTime;
+        double yGoalOffset = goalY - follower.getVelocity().getYComponent() * shotTime;
+
+        //GOAL AND ANGLETOGOAL CALCULATIONS WITH SHOOTING WHILE MOVING
+        double dx = xGoalOffset - follower.getPose().getX();
+        double dy = yGoalOffset - follower.getPose().getY();
 
         distanceToGoal = Math.hypot(dx, dy);
 
         // Calculate angle to goal relative to turret
         double turretAngle = turret.getCurrentAngle();
-        angleToGoal = Math.toDegrees(Math.atan2(dy, dx)) - Math.toDegrees(follower.getTotalHeading()) + turretAngle;
+        angleToGoal = AngleUnit.normalizeDegrees(Math.toDegrees(Math.atan2(dy, dx)) - Math.toDegrees(follower.getTotalHeading()) + turretAngle);
     }
 
     /**
@@ -149,15 +155,15 @@ public class Robot {
      */
     public void setAlliance(Alliance alliance) {
         if (alliance == Alliance.BLUE){
-            setGoal(-66, -66);
+            setGoal(-65, -65);
             driveOffset = -1.5707963267948966;
         } else if (alliance == Alliance.RED) {
-            setGoal(-66, 66);
+            setGoal(-65, 65 );
             driveOffset = 1.5707963267948966;
         } else if (alliance == Alliance.AUTO_BLUE) {
-            setGoal(8, 136);
+            setGoal(9, 135);
         } else if (alliance == Alliance.AUTO_RED){
-            setGoal(136, 136);
+            setGoal(135, 135);
         }
     }
     /**

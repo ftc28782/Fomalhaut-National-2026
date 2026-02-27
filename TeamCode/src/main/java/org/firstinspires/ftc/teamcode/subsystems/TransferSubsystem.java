@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
@@ -17,7 +16,7 @@ public class TransferSubsystem extends SubsystemBase {
         transferServo = hardwareMap.get(Servo.class, "transferServo");
     }
 
-    public void setPower(double position) {
+    public void setPosition(double position) {
         currentPower = position;
         transferServo.setPosition(position);
     }
@@ -26,22 +25,20 @@ public class TransferSubsystem extends SubsystemBase {
      * Run the transfer forward.
      */
     public void runForward() {
-        setPower(0.7);
+        setPosition(0.7);
     }
 
     /**
      * Run the transfer backward.
      */
     public void runBackward() {
-        setPower(-1);
+        setPosition(-1);
     }
 
     /**
      * Stop the transfer servo.
      */
-    public void stop() {
-        setPower(0);
-    }
+    public void stop() { setPosition(0); }
 
     /**
      * Get the current power.

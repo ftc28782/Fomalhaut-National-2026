@@ -4,14 +4,11 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.controller.PIDFController;
@@ -22,10 +19,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
-
-//LAST REDDEBUGCHASSIS BEFORE SETPOWER CALIBRATION
-@TeleOp(name = "Red Alliance Teleop")
-public class DebugREDChassis extends OpMode {
+@TeleOp(name = "Blue Alliance Teleop")
+public class DebugBLUEChassis extends OpMode {
 
     //FOLLOWER
     Follower follower;
@@ -47,7 +42,7 @@ public class DebugREDChassis extends OpMode {
     public double TicksPerRev = 28;
     private double turretPower;
     private double hoodPosition = 1;
-    private final double GOAL_BLUE_X = -66, GOAL_BLUE_Y = -66;
+    private final double GOAL_BLUE_X = -65, GOAL_BLUE_Y = -65;
     Deadline IMUTimer;
     private double odoX, odoY;
     private double turretAngle;
@@ -67,6 +62,20 @@ public class DebugREDChassis extends OpMode {
     DcMotorEx intakeencoder = null;
     private boolean PDchange;
     PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, I, 0, 0);
+
+    // --- Teleop smoothing (linear interpolation) ---
+    // target values come directly from sticks; current values are smoothed towards target each loop
+    private double targetDriveForward = 0.0; // corresponds to forward/back (left stick Y)
+    private double targetDriveStrafe = 0.0;  // corresponds to left/right (left stick X)
+    private double targetDriveRotate = 0.0;  // corresponds to rotation (right stick X)
+
+    private double currentDriveForward = 0.0;
+    private double currentDriveStrafe = 0.0;
+    private double currentDriveRotate = 0.0;
+
+    // smoothing factor in (0,1]; closer to 1 -> faster response, closer to 0 -> smoother/slower
+    // You can tweak this value to taste. Example: 0.15 is reasonably smooth but responsive.
+    private double driveLerpFactor = 0.15;
 
     public void init() {
 
@@ -94,7 +103,6 @@ public class DebugREDChassis extends OpMode {
         intakeencoder = hardwareMap.get(DcMotorEx.class, "backLeft");
 
         //MOTORS
-
         g = hardwareMap.get(DcMotorEx.class,"frontLeft");
         h = hardwareMap.get(DcMotorEx.class,"backLeft");
         i = hardwareMap.get(DcMotorEx.class,"frontRight");
@@ -113,6 +121,14 @@ public class DebugREDChassis extends OpMode {
         shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
         shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
+
+        // Initialize smoothing state from a neutral starting point
+        currentDriveForward = 0.0;
+        currentDriveStrafe = 0.0;
+        currentDriveRotate = 0.0;
+        targetDriveForward = 0.0;
+        targetDriveStrafe = 0.0;
+        targetDriveRotate = 0.0;
     }
 
     public void loop() {
@@ -123,7 +139,27 @@ public class DebugREDChassis extends OpMode {
         turretAngle = (intake.getCurrentPosition() / 100.35);
 
         follower.update();
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false, 1.5708);
+
+        // --- Read raw joystick targets ---
+        targetDriveForward = -gamepad1.left_stick_y; // forward/back
+        targetDriveStrafe = -gamepad1.left_stick_x;  // strafe
+        targetDriveRotate = -gamepad1.right_stick_x; // rotation
+
+        // --- Smooth (linear interpolate) current values towards targets ---
+        currentDriveForward = lerp(currentDriveForward, targetDriveForward, driveLerpFactor);
+        currentDriveStrafe  = lerp(currentDriveStrafe, targetDriveStrafe, driveLerpFactor);
+        currentDriveRotate  = lerp(currentDriveRotate, targetDriveRotate, driveLerpFactor);
+
+        // Allow on-the-fly tuning of smoothing factor (LB to decrease, RB to increase)
+        if (gamepad1.leftBumperWasPressed()) {
+            driveLerpFactor = Math.max(0.01, driveLerpFactor - 0.05);
+        }
+        if (gamepad1.rightBumperWasPressed()) {
+            driveLerpFactor = Math.min(1.0, driveLerpFactor + 0.05);
+        }
+
+        // Use the smoothed values when commanding the follower teleop drive
+        follower.setTeleOpDrive(currentDriveForward, currentDriveStrafe, currentDriveRotate, false, 1.5708);
 
 
 
@@ -153,20 +189,8 @@ public class DebugREDChassis extends OpMode {
         odoX = followerPose.getX();
         odoY = followerPose.getY();
 
-        //GOAL AND ANGLETOGOAL CALCULATIONS WITHOU SHOOTING WHILE MOVING
-//        double dx = GOAL_BLUE_X - odoX;
-//        double dy = GOAL_BLUE_Y - odoY;
-//
-//        double distance = Math.hypot(dx, dy);
-//
-//        heading = Math.toDegrees(AngleUnit.normalizeDegrees(follower.getHeading()));
-//
-//        double angleToGoal = Math.toDegrees(Math.atan2(dy, dx)) - Math.toDegrees(AngleUnit.normalizeDegrees(follower.getHeading())) + turretAngle;
-//        turretPower = turretPID.calculate(angleToGoal);
-
-
         //SHOOTING WHILE MOVING
-        double shotTime = 1;
+        double shotTime= 1;
         xGoalOffset = GOAL_BLUE_X - follower.getVelocity().getXComponent() * shotTime;
         yGoalOffset = GOAL_BLUE_Y - follower.getVelocity().getYComponent() * shotTime;
 
@@ -176,9 +200,9 @@ public class DebugREDChassis extends OpMode {
 
         distance = Math.hypot(dx, dy);
 
-        heading = Math.toDegrees(follower.getHeading());
+        heading = Math.toDegrees(follower.getTotalHeading());
 
-        double angleToGoal = Math.toDegrees(Math.atan2(dy, dx)) - heading + turretAngle;
+        double angleToGoal = AngleUnit.normalizeDegrees(Math.toDegrees(Math.atan2(dy, dx)) - heading + turretAngle);
         turretPower = turretPID.calculate(angleToGoal);
 
         //TURRET SYSTEM
@@ -189,20 +213,10 @@ public class DebugREDChassis extends OpMode {
             turretPower = turretPower - tF;
         }
 
-        //da pra fazer esse negocio aq:
-        //lembrando que os sinais do turretPower eu n faço ideia KKKKKKKKKK
-
-//        if (turretAngle > 115 && turretPower > 0) { //Solução boa para o giro da turret que vou aplicar dps
-//            turretPower = Math.abs(turretPower);
-//        }
-//        if (turretAngle < -115 && turretPower < 0) {
-//            turretPower = -Math.abs(turretPower);
-//        }
-
         if (turretAngle > 115 && turretPower > 0) {
             turretPower = 0;
         }
-        if (turretAngle < -45 && turretPower < 0) { //Angulo original era 115º
+        if (turretAngle < -115 && turretPower < 0) {
             turretPower = 0;
         }
         if (Math.abs(angleToGoal) < 1) {
@@ -252,9 +266,8 @@ public class DebugREDChassis extends OpMode {
     double shooter_power = (targetVelocity * TicksPerRev / 60);
 
 
-    double ShooterVel = (shooter1.getVelocity() * 60 / TicksPerRev);
-    double CurrentVelocity = ShooterVel;
-    double error = targetVelocity - CurrentVelocity;
+    double ShooterVel = -(shooter1.getVelocity() * 60 / TicksPerRev);
+    double error = targetVelocity - ShooterVel;
 
         if(gamepad1.xWasPressed()) {
             a++;
@@ -320,6 +333,16 @@ public class DebugREDChassis extends OpMode {
         telemetry.addData("FusedY",odoY);
         telemetry.addData("X speed", follower.getVelocity().getXComponent());
         telemetry.addData("Y speed", follower.getVelocity().getYComponent());
+
+        // Telemetry for smoothing tuning
+        telemetry.addData("driveLerpFactor","%.3f", driveLerpFactor);
+        telemetry.addData("targetForward","%.3f", targetDriveForward);
+        telemetry.addData("currentForward","%.3f", currentDriveForward);
+        telemetry.addData("targetStrafe","%.3f", targetDriveStrafe);
+        telemetry.addData("currentStrafe","%.3f", currentDriveStrafe);
+        telemetry.addData("targetRotate","%.3f", targetDriveRotate);
+        telemetry.addData("currentRotate","%.3f", currentDriveRotate);
+
         telemetry.addData("X offset", xGoalOffset);
         telemetry.addData("Y offset", yGoalOffset);
         telemetry.addData("Distance",distance);
@@ -340,5 +363,10 @@ public class DebugREDChassis extends OpMode {
         telemetry.addData("rpm", rpm);
 
         telemetry.update();
+    }
+
+    // linear interpolation helper
+    private double lerp(double from, double to, double t) {
+        return from + t * (to - from);
     }
 }

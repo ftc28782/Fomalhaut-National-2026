@@ -45,51 +45,35 @@ public class FlywheelSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
     }
-    /**
-     * Set the target velocity in RPM and run the flywheel.
-     * @param rpm Target velocity in RPM
-     */
-    public void setVelocityRPM(double rpm) {
-        targetVelocityRPM = rpm;
-        double ticksPerSecond = rpm * TICKS_PER_REV / 60;
+    public void setVelocityForDistance(double distance) {
+        targetVelocityRPM = 2991.758
+                - 66.95706 * distance
+                + 2.195716 * Math.pow(distance, 2)
+                - 0.02787701 * Math.pow(distance, 3)
+                + 0.0001660626 * Math.pow(distance, 4)
+                - 3.770099e-7 * Math.pow(distance, 5);
+        double ticksPerSecond = targetVelocityRPM * TICKS_PER_REV / 60;
         shooter1.setVelocity(ticksPerSecond);
         shooter2.setVelocity(ticksPerSecond);
-        isRunning = rpm > 0;
+
+        isRunning = targetVelocityRPM > 0;
     }
 
     /**
      * Calculate and set target velocity based on distance.
      * @param distance Distance to goal in inches
      */
-    public void setVelocityForDistance(double distance) {
 
-        double rpm = 2991.758
-                - 66.95706 * distance
-                + 2.195716 * Math.pow(distance, 2)
-                - 0.02787701 * Math.pow(distance, 3)
-                + 0.0001660626 * Math.pow(distance, 4)
-                - 3.770099e-7 * Math.pow(distance, 5);
-        if (distance > 36) {
-        hoodPosition = 0.000123486 * Math.pow(distance, 3)
-                - 0.0153796 * Math.pow(distance, 2)
-                + 0.591463 * distance
-                - 6.03862;
-        } else {
-            hoodPosition = 0;
-        }
+    public void setHoodForDistance(double distance) {
+        hoodPosition = 1.000169 + (-0.0006164855 - 1.000169) / (1 + Math.pow(distance / 49.03941, 21.62445));
         hoodServo.setPosition(hoodPosition);
-        targetVelocityRPM = rpm;
-        if (isRunning) {
-            setVelocityRPM(rpm);
-        }
     }
-
     /**
      * Start the flywheel at the current target velocity.
      */
     public void start() {
         isRunning = true;
-        setVelocityRPM(targetVelocityRPM);
+        setVelocityForDistance(targetVelocityRPM);
     }
 
     /**
@@ -121,24 +105,6 @@ public class FlywheelSubsystem extends SubsystemBase {
     }
 
     /**
-     * Calculate and set hood position based on distance.
-     * @param distance Distance to goal in inches
-     */
-    public void setHoodForDistance(double distance) {
-        // Formula from original code (commented out)
-        // hoodPosition = HOOD_A + HOOD_B * distance + HOOD_C * Math.pow(distance, 2)
-        //              + HOOD_D * Math.pow(distance, 3) + HOOD_E * Math.pow(distance, 4);
-        // Currently using fixed position as in original
-    }
-
-    /**
-     * Get the current velocity of shooter 1 in RPM.
-     */
-    public double getShooter1VelocityRPM() {
-        return shooter1.getVelocity() * 60 / TICKS_PER_REV;
-    }
-
-    /**
      * Get the current velocity of shooter 2 in RPM.
      */
     public double getShooter2VelocityRPM() {
@@ -149,7 +115,7 @@ public class FlywheelSubsystem extends SubsystemBase {
      * Get the average current velocity in RPM.
      */
     public double getAverageVelocityRPM() {
-        return (getShooter1VelocityRPM() + getShooter2VelocityRPM()) / 2;
+        return getShooter2VelocityRPM();
     }
 
     /**
@@ -160,7 +126,7 @@ public class FlywheelSubsystem extends SubsystemBase {
     }
 
     public boolean isAtTargetVelocity() {
-        return Math.abs(getVelocityError()) < 285;
+        return Math.abs(getVelocityError()) < 250;
     }
 
     /**

@@ -39,12 +39,17 @@ public class CommandAutoFrontBlue extends CommandOpMode {
         paths = new AutoPaths();
 
         //Set alliance
-        robot.setAlliance(Robot.Alliance.BLUE);
+        robot.setAlliance(Robot.Alliance.AUTO_BLUE);
 
         // Deixa a flywheel ligada 100% do tempo
         robot.flywheel.setDefaultCommand(
                 new FlywheelRunCommand(robot.flywheel, robot)
         );
+
+        // Also explicitly schedule the flywheel command to ensure it starts immediately
+        // (some command schedulers require an explicit schedule to kick off default-like behavior)
+        CommandScheduler.getInstance().schedule(new FlywheelRunCommand(robot.flywheel, robot));
+        telemetry.addData("Auto", "Scheduled FlywheelRunCommand");
 
         // Set up the turret to track the goal continuously
         robot.turret.setDefaultCommand(
@@ -63,6 +68,8 @@ public class CommandAutoFrontBlue extends CommandOpMode {
 
         // Run the manual state machine
         statePathUpdate();
+
+        robot.flywheel.setVelocityForDistance(robot.getDistanceToGoal());
 
         // Telemetry
         telemetry.addData("State", pathState);
@@ -98,6 +105,7 @@ public class CommandAutoFrontBlue extends CommandOpMode {
                     setPathState(2);
                     endIntake();
                 }
+                break;
 
             case 2: // Volta para atirar 2 (toShoot2)
                 if (!stateInit) {

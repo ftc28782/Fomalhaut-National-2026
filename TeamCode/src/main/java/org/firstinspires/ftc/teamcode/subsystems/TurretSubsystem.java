@@ -50,7 +50,7 @@ public class TurretSubsystem extends SubsystemBase {
         if (currentAngle > 115 && power > 0) {
             power = 0;
         }
-        if (currentAngle < -45 && power < 0) {
+        if (currentAngle < -115 && power < 0) {
             power = 0;
         }
         if (power >= 0) {

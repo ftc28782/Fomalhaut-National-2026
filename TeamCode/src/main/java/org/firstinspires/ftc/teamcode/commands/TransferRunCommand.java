@@ -35,7 +35,7 @@ public class TransferRunCommand extends CommandBase {
 
     @Override
     public void initialize() {
-        transfer.setPower(power);
+        transfer.setPosition(power);
     }
 
     @Override
