@@ -42,7 +42,7 @@ public class DebugBLUEChassis extends OpMode {
     public double TicksPerRev = 28;
     private double turretPower;
     private double hoodPosition = 1;
-    private final double GOAL_BLUE_X = -65, GOAL_BLUE_Y = -65;
+    private final double GOAL_BLUE_X = -65, GOAL_BLUE_Y = 65;
     Deadline IMUTimer;
     private double odoX, odoY;
     private double turretAngle;
@@ -75,7 +75,7 @@ public class DebugBLUEChassis extends OpMode {
 
     // smoothing factor in (0,1]; closer to 1 -> faster response, closer to 0 -> smoother/slower
     // You can tweak this value to taste. Example: 0.15 is reasonably smooth but responsive.
-    private double driveLerpFactor = 0.15;
+    private double driveLerpFactor = 0.4;
 
     public void init() {
 
@@ -117,8 +117,8 @@ public class DebugBLUEChassis extends OpMode {
         transferServo = hardwareMap.get(Servo.class, "transferServo");
         shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shooter1.setDirection(DcMotorSimple.Direction.FORWARD);
-        shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooter2.setDirection(DcMotorSimple.Direction.FORWARD);
         shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
 
@@ -151,20 +151,21 @@ public class DebugBLUEChassis extends OpMode {
         currentDriveRotate  = lerp(currentDriveRotate, targetDriveRotate, driveLerpFactor);
 
         // Allow on-the-fly tuning of smoothing factor (LB to decrease, RB to increase)
-        if (gamepad1.leftBumperWasPressed()) {
-            driveLerpFactor = Math.max(0.01, driveLerpFactor - 0.05);
-        }
-        if (gamepad1.rightBumperWasPressed()) {
-            driveLerpFactor = Math.min(1.0, driveLerpFactor + 0.05);
-        }
+//        if (gamepad1.leftBumperWasPressed()) {
+//            driveLerpFactor = Math.max(0.01, driveLerpFactor - 0.05);
+//        }
+//        if (gamepad1.rightBumperWasPressed()) {
+//            driveLerpFactor = Math.min(1.0, driveLerpFactor + 0.05);
+//        }
 
-        // Use the smoothed values when commanding the follower teleop drive
+//        // Use the smoothed values when commanding the follower teleop drive
         follower.setTeleOpDrive(currentDriveForward, currentDriveStrafe, currentDriveRotate, false, 1.5708);
+//        follower.setTeleOpDrive(targetDriveForward, targetDriveStrafe, targetDriveRotate, false, 1.5708);
 
 
 
         //LIMELIGHT
-        limelightChassis.updateRobotOrientation(follower.getHeading());
+        limelightChassis.updateRobotOrientation(Math.toDegrees(follower.getHeading()));
 
         LLResult result = limelightChassis.getLatestResult();
         if (result != null && result.isValid()) {
@@ -213,10 +214,10 @@ public class DebugBLUEChassis extends OpMode {
             turretPower = turretPower - tF;
         }
 
-        if (turretAngle > 115 && turretPower > 0) {
+        if (turretAngle > 50 && turretPower > 0) {
             turretPower = 0;
         }
-        if (turretAngle < -115 && turretPower < 0) {
+        if (turretAngle < -50 && turretPower < 0) {
             turretPower = 0;
         }
         if (Math.abs(angleToGoal) < 1) {
@@ -234,22 +235,22 @@ public class DebugBLUEChassis extends OpMode {
             turretPID.setPIDF(tP, 0.0, tD, 0);
         }
         PDchange = false;
-        if (gamepad1.dpadLeftWasPressed()) {
-            P += stepSizes[stepIndex];
-             PDchange = true;
-        }
-        if (gamepad1.dpadRightWasPressed()) {
-            P -= stepSizes[stepIndex];
-             PDchange = true;
-        }
-        if (gamepad1.dpadUpWasPressed()) {
-            I += stepSizes[stepIndex];
-             PDchange = true;
-        }
-        if (gamepad1.dpadDownWasPressed()) {
-            I -= stepSizes[stepIndex];
-             PDchange = true;
-        }
+//        if (gamepad1.dpadLeftWasPressed()) {
+//            P += stepSizes[stepIndex];
+//             PDchange = true;
+//        }
+//        if (gamepad1.dpadRightWasPressed()) {
+//            P -= stepSizes[stepIndex];
+//             PDchange = true;
+//        }
+//        if (gamepad1.dpadUpWasPressed()) {
+//            I += stepSizes[stepIndex];
+//             PDchange = true;
+//        }
+//        if (gamepad1.dpadDownWasPressed()) {
+//            I -= stepSizes[stepIndex];
+//             PDchange = true;
+//        }
 
         //SHOOTER SYSTEM
         pidfCoefficients = new PIDFCoefficients(P, I, 0, 0);
@@ -257,16 +258,16 @@ public class DebugBLUEChassis extends OpMode {
         shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
 
 //        if (gamepad1.dpadDownWasPressed()) {
-//            TargetVelocity = TargetVelocity - 100;
+//            targetVelocity = targetVelocity - 100;
 //        }
 //        if (gamepad1.dpadUpWasPressed()) {
-//            TargetVelocity = TargetVelocity + 100;
+//            targetVelocity = targetVelocity + 100;
 //    }
 
     double shooter_power = (targetVelocity * TicksPerRev / 60);
 
 
-    double ShooterVel = -(shooter1.getVelocity() * 60 / TicksPerRev);
+    double ShooterVel = (shooter2.getVelocity() * 60 / TicksPerRev);
     double error = targetVelocity - ShooterVel;
 
         if(gamepad1.xWasPressed()) {
@@ -282,9 +283,8 @@ public class DebugBLUEChassis extends OpMode {
         }
 
         //HOOD POSITION
-        targetVelocity = 270994600 + (2379.938 - 270994600) / Math.pow(1 + Math.pow(distance / 46.8324, 5.934918), 7.048393e-7);
-
-        hoodPosition = 1.000169 + (-0.0006164855 - 1.000169) / (1 + Math.pow(distance / 49.03941, 21.62445));
+        targetVelocity = 7205.578 + (2800 - 7205.578) / Math.pow(1 + Math.pow(distance / 59.03553, 761.1621), 0.0003075716);
+        hoodPosition = 1 + (0.9 - 1) / Math.pow(1 + Math.pow(distance / 69.93993, 127.7445), 33.05428);
 
         hoodServo.setPosition(hoodPosition); //Set Hood position
 //        if (gamepad1.leftBumperWasPressed()) {
@@ -296,7 +296,7 @@ public class DebugBLUEChassis extends OpMode {
     //INTAKE AND LAUCHER SYSTEM
     boolean Intake = gamepad1.left_trigger > 0.1;
     boolean Launch = gamepad1.right_trigger > 0.1;
-    boolean Transfer = Math.abs(error) < 350;
+    boolean Transfer = Math.abs(error) < 200;
 
     if (Launch && Transfer) {
         transferServo.setPosition(0);
@@ -309,21 +309,7 @@ public class DebugBLUEChassis extends OpMode {
         intake.setPower(0);
         }
 
-        //TELEMETRIES
-        telemetry.addData("shooter1",shooter1.getCurrent(CurrentUnit.AMPS));
-        telemetry.addData("shooter2",shooter2.getCurrent(CurrentUnit.AMPS));
-        telemetry.addData("turretMotor",turretMotor.getCurrent(CurrentUnit.AMPS));
-        telemetry.addData("drive",g.getCurrent(CurrentUnit.AMPS));
-        telemetry.addData("drive",h.getCurrent(CurrentUnit.AMPS));
-        telemetry.addData("drive",i.getCurrent(CurrentUnit.AMPS));
-        telemetry.addData("drive",j.getCurrent(CurrentUnit.AMPS));
-        telemetry.addData("intake", intake.getCurrent(CurrentUnit.AMPS));
-        telemetry.addData("all current",(shooter1.getCurrent(CurrentUnit.AMPS) + shooter2.getCurrent(CurrentUnit.AMPS) +
-                turretMotor.getCurrent(CurrentUnit.AMPS) + g.getCurrent(CurrentUnit.AMPS) +
-                h.getCurrent(CurrentUnit.AMPS) + i.getCurrent(CurrentUnit.AMPS)+
-                j.getCurrent(CurrentUnit.AMPS) + intake.getCurrent(CurrentUnit.AMPS)));
-
-
+       //TELEMETRIES
         telemetry.addData("P","%.5f (D-Pad U/D)",P);
         telemetry.addData("I","%.5f (D-Pad L/R)",I);
         telemetry.addData("Step Size (Y to switch)","%.4f",stepSizes[stepIndex]);
@@ -359,7 +345,7 @@ public class DebugBLUEChassis extends OpMode {
         telemetry.addData("TurretPower",turretPower);
         telemetry.addData("odo error",errorVision);
 
-        double rpm = (intakeencoder.getVelocity() / 252) * 60.0;
+        double rpm = (intakeencoder.getVelocity() / 140) * 60.0;
         telemetry.addData("rpm", rpm);
 
         telemetry.update();

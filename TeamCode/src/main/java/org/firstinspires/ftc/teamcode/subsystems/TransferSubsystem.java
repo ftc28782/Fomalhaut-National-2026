@@ -18,6 +18,7 @@ public class TransferSubsystem extends SubsystemBase {
 
     public void setPosition(double position) {
         currentPower = position;
+
         transferServo.setPosition(position);
     }
 
