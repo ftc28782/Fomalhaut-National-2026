@@ -59,10 +59,6 @@ public class BlueAllianceTeleOp extends CommandOpMode {
     public void run() {
         robot.update();
 
-        if (robot.flywheel.isRunning()) {
-            robot.flywheel.setVelocityForDistance(robot.getDistanceToGoal());
-        }
-
         robot.setTeleOpDrive(
                 -gamepad1.left_stick_y,
                 -gamepad1.left_stick_x,

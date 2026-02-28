@@ -15,7 +15,6 @@ import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
@@ -47,8 +46,8 @@ public class DebugBLUEChassis extends OpMode {
     private double odoX, odoY;
     private double turretAngle;
     PIDFController turretPID;
-    private double P = 90;
-    private double I = 0.36;
+    private double P = 270;
+    private double F = 4;
     private double tP = 0.024;
     private double tD = 0.0001;
     private double tF = 0;
@@ -61,7 +60,7 @@ public class DebugBLUEChassis extends OpMode {
     public int stepIndex = 1;
     DcMotorEx intakeencoder = null;
     private boolean PDchange;
-    PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, I, 0, 0);
+    PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
 
     // --- Teleop smoothing (linear interpolation) ---
     // target values come directly from sticks; current values are smoothed towards target each loop
@@ -117,7 +116,7 @@ public class DebugBLUEChassis extends OpMode {
         transferServo = hardwareMap.get(Servo.class, "transferServo");
         shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooter1.setDirection(DcMotorSimple.Direction.FORWARD);
         shooter2.setDirection(DcMotorSimple.Direction.FORWARD);
         shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
@@ -151,12 +150,12 @@ public class DebugBLUEChassis extends OpMode {
         currentDriveRotate  = lerp(currentDriveRotate, targetDriveRotate, driveLerpFactor);
 
         // Allow on-the-fly tuning of smoothing factor (LB to decrease, RB to increase)
-//        if (gamepad1.leftBumperWasPressed()) {
-//            driveLerpFactor = Math.max(0.01, driveLerpFactor - 0.05);
-//        }
-//        if (gamepad1.rightBumperWasPressed()) {
-//            driveLerpFactor = Math.min(1.0, driveLerpFactor + 0.05);
-//        }
+        if (gamepad1.leftBumperWasPressed()) {
+            driveLerpFactor = Math.max(0.01, driveLerpFactor - 0.05);
+        }
+        if (gamepad1.rightBumperWasPressed()) {
+            driveLerpFactor = Math.min(1.0, driveLerpFactor + 0.05);
+        }
 
 //        // Use the smoothed values when commanding the follower teleop drive
         follower.setTeleOpDrive(currentDriveForward, currentDriveStrafe, currentDriveRotate, false, 1.5708);
@@ -253,7 +252,7 @@ public class DebugBLUEChassis extends OpMode {
 //        }
 
         //SHOOTER SYSTEM
-        pidfCoefficients = new PIDFCoefficients(P, I, 0, 0);
+        pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
         shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
 
@@ -311,7 +310,7 @@ public class DebugBLUEChassis extends OpMode {
 
        //TELEMETRIES
         telemetry.addData("P","%.5f (D-Pad U/D)",P);
-        telemetry.addData("I","%.5f (D-Pad L/R)",I);
+        telemetry.addData("F","%.5f (D-Pad L/R)", F);
         telemetry.addData("Step Size (Y to switch)","%.4f",stepSizes[stepIndex]);
         telemetry.addData("X LL",camX);
         telemetry.addData("Y LL",camY);

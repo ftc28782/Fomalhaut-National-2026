@@ -47,10 +47,10 @@ public class TurretSubsystem extends SubsystemBase {
      */
     public void setPower(double power) {
         // Apply limits
-        if (currentAngle > 115 && power > 0) {
+        if (currentAngle > 50 && power > 0) {
             power = 0;
         }
-        if (currentAngle < -115 && power < 0) {
+        if (currentAngle < -50 && power < 0) {
             power = 0;
         }
         if (power >= 0) {
