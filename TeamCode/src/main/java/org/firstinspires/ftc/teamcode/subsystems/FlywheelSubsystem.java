@@ -34,7 +34,7 @@ public class FlywheelSubsystem extends SubsystemBase {
         // Configure motors
         shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shooter1.setDirection(DcMotorSimple.Direction.FORWARD);
+        shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
         shooter2.setDirection(DcMotorSimple.Direction.FORWARD);
 
         // Set PIDF coefficients
@@ -126,7 +126,7 @@ public class FlywheelSubsystem extends SubsystemBase {
     }
 
     public boolean isAtTargetVelocity() {
-        return Math.abs(getVelocityError()) < 250;
+        return Math.abs(getVelocityError()) < 200;
     }
 
     /**

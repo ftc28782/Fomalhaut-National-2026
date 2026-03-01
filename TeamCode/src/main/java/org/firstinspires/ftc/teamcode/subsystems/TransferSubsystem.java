@@ -25,7 +25,7 @@ public class TransferSubsystem extends SubsystemBase {
      * Run the transfer forward.
      */
     public void runForward() {
-        setPosition(0.7);
+        setPosition(0);
     }
 
     /**
@@ -38,7 +38,7 @@ public class TransferSubsystem extends SubsystemBase {
     /**
      * Stop the transfer servo.
      */
-    public void stop() { setPosition(0); }
+    public void stop() { setPosition(0.7); }
 
     /**
      * Get the current power.

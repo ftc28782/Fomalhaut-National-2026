@@ -16,9 +16,9 @@ public class TurretSubsystem extends SubsystemBase {
     private final PIDFController turretPID;
 
     // PID Constants
-    public static double kP = 0.024;
+    public static double kP = 0.045;
     public static double kD = 0.0001;
-    public static double kF = 0;
+    public static double kF = 0.06;
 
     // Encoder ticks to degrees conversion
     private static final double TICKS_TO_DEGREES = 100.35;
@@ -47,16 +47,18 @@ public class TurretSubsystem extends SubsystemBase {
      */
     public void setPower(double power) {
         // Apply limits
-        if (currentAngle > 50 && power > 0) {
-            power = 0;
-        }
-        if (currentAngle < -50 && power < 0) {
-            power = 0;
-        }
-        if (power >= 0) {
-            power = power + kF;
-        } else {
-            power = power - kF;
+//        if (currentAngle > 50 && power > 0) {
+//            power = 0;
+//        }
+//        if (currentAngle < -50 && power < 0) {
+//            power = 0;
+//        }
+        if (Math.abs(power) > 0.01) {
+            if (power > 0) {
+                power = power + kF;
+            } else {
+                power = power - kF;
+            }
         }
         lastPower = power;
         turretMotor.setPower(power);

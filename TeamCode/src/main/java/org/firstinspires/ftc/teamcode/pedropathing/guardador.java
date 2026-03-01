@@ -19,8 +19,8 @@ import org.firstinspires.ftc.teamcode.commands.TurretTrackCommand;
 /**
  * Autonomous using a manual state machine with the Command-based structure.
  */
-@Autonomous(name = "Command Auto Front Red")
-public class CommandAutoFrontRed extends CommandOpMode {
+@Autonomous(name = "guardador")
+public class guardador extends CommandOpMode {
 
     private Robot robot;
     private AutoPaths paths;
@@ -29,7 +29,7 @@ public class CommandAutoFrontRed extends CommandOpMode {
     private Timer pathTimer;
     private int pathState = 0;
     private double startHeading = Math.toRadians(180);
-    public Pose startPose = new Pose(34, 136, startHeading);
+    public Pose startPose = new Pose(40, 136.000, startHeading);
 
     @Override
     public void initialize() {
@@ -53,7 +53,7 @@ public class CommandAutoFrontRed extends CommandOpMode {
         robot.turret.setDefaultCommand(
                 new TurretTrackCommand(
                         robot.turret,
-                        robot.turret::getCurrentAngle
+                        () -> 0
                 )
         );
     }
@@ -206,7 +206,7 @@ public class CommandAutoFrontRed extends CommandOpMode {
         if (arrived) {
             Shoot();
         }
-        if (!robot.follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 2.8) {
+        if (!robot.follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 3) {
             endShoot();
             pathState = newState;
             stateInit = false;
@@ -253,11 +253,11 @@ public class CommandAutoFrontRed extends CommandOpMode {
             toShoot1 = robot.follower.pathBuilder()
                     .addPath(
                             new BezierLine(
-                                    startPose,
+                                    new Pose(40.346, 135.924),
                                     new Pose(49.617, 87.990)
                             )
                     )
-                    .setLinearHeadingInterpolation(startHeading, Math.toRadians(135))
+                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(135))
                     .build();
 
             Intake1 = robot.follower.pathBuilder()

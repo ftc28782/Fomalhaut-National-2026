@@ -41,16 +41,16 @@ public class DebugBLUEChassis extends OpMode {
     public double TicksPerRev = 28;
     private double turretPower;
     private double hoodPosition = 1;
-    private final double GOAL_BLUE_X = -65, GOAL_BLUE_Y = 65;
+    private final double GOAL_BLUE_X = -65, GOAL_BLUE_Y = 64.3;
     Deadline IMUTimer;
     private double odoX, odoY;
     private double turretAngle;
     PIDFController turretPID;
     private double P = 270;
     private double F = 4;
-    private double tP = 0.024;
+    private double tP = 0.05;
     private double tD = 0.0001;
-    private double tF = 0;
+    private double tF = 0.06;
     private double a = 0;
     DcMotorEx g,h,i,j;
 
@@ -116,7 +116,7 @@ public class DebugBLUEChassis extends OpMode {
         transferServo = hardwareMap.get(Servo.class, "transferServo");
         shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shooter1.setDirection(DcMotorSimple.Direction.FORWARD);
+        shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
         shooter2.setDirection(DcMotorSimple.Direction.FORWARD);
         shooter1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         shooter2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
@@ -234,22 +234,22 @@ public class DebugBLUEChassis extends OpMode {
             turretPID.setPIDF(tP, 0.0, tD, 0);
         }
         PDchange = false;
-//        if (gamepad1.dpadLeftWasPressed()) {
-//            P += stepSizes[stepIndex];
-//             PDchange = true;
-//        }
-//        if (gamepad1.dpadRightWasPressed()) {
-//            P -= stepSizes[stepIndex];
-//             PDchange = true;
-//        }
-//        if (gamepad1.dpadUpWasPressed()) {
-//            I += stepSizes[stepIndex];
-//             PDchange = true;
-//        }
-//        if (gamepad1.dpadDownWasPressed()) {
-//            I -= stepSizes[stepIndex];
-//             PDchange = true;
-//        }
+        if (gamepad1.dpadLeftWasPressed()) {
+            tP += stepSizes[stepIndex];
+             PDchange = true;
+        }
+        if (gamepad1.dpadRightWasPressed()) {
+            tP -= stepSizes[stepIndex];
+             PDchange = true;
+        }
+        if (gamepad1.dpadUpWasPressed()) {
+            tD += stepSizes[stepIndex];
+             PDchange = true;
+        }
+        if (gamepad1.dpadDownWasPressed()) {
+            tD -= stepSizes[stepIndex];
+             PDchange = true;
+        }
 
         //SHOOTER SYSTEM
         pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
@@ -282,6 +282,8 @@ public class DebugBLUEChassis extends OpMode {
         }
 
         //HOOD POSITION
+
+
         targetVelocity = 7205.578 + (2800 - 7205.578) / Math.pow(1 + Math.pow(distance / 59.03553, 761.1621), 0.0003075716);
         hoodPosition = 1 + (0.9 - 1) / Math.pow(1 + Math.pow(distance / 69.93993, 127.7445), 33.05428);
 
@@ -339,7 +341,7 @@ public class DebugBLUEChassis extends OpMode {
         telemetry.addData("Turret Angle",turretAngle);
         telemetry.addData("Angle to Goal",angleToGoal);
         telemetry.addData("tP","%.5f (D-Pad U/D)",tP);
-        telemetry.addData("tF","%.5f (D-Pad L/R)",tF);
+        telemetry.addData("tD","%.5f (D-Pad L/R)",tD);
         telemetry.addData("Hood",hoodPosition);
         telemetry.addData("TurretPower",turretPower);
         telemetry.addData("odo error",errorVision);
