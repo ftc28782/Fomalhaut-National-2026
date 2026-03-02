@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.ftc.PoseConverter;
+import com.pedropathing.geometry.CoordinateSystem;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -11,15 +13,22 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ReadWriteFile;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
-@TeleOp(name = "Blue Alliance Teleop")
-public class DebugBLUEChassis extends OpMode {
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+@TeleOp(name = "RED Alliance Teleop")
+public class DebugREDChassis extends OpMode {
 
     //FOLLOWER
     Follower follower;
@@ -41,14 +50,14 @@ public class DebugBLUEChassis extends OpMode {
     public double TicksPerRev = 28;
     private double turretPower;
     private double hoodPosition = 1;
-    private final double GOAL_BLUE_X = -65, GOAL_BLUE_Y = 64.3;
+    private final double GOAL_RED_X = -65, GOAL_RED_Y = 64.3;
     Deadline IMUTimer;
     private double odoX, odoY;
     private double turretAngle;
     PIDFController turretPID;
     private double P = 270;
     private double F = 4;
-    private double tP = 0.05;
+    private double tP = 0.047;
     private double tD = 0.0001;
     private double tF = 0.06;
     private double a = 0;
@@ -76,6 +85,13 @@ public class DebugBLUEChassis extends OpMode {
     // You can tweak this value to taste. Example: 0.15 is reasonably smooth but responsive.
     private double driveLerpFactor = 0.4;
 
+    // ====== DADOS CARREGADOS DO AUTÔNOMO ======
+    private boolean poseLoaded = false;
+    private double loadedX, loadedY, loadedHeading;
+    private double savedX, savedY, savedHeading;
+
+    private List<Double> routine;
+
     public void init() {
 
         //TURRET PID
@@ -87,7 +103,38 @@ public class DebugBLUEChassis extends OpMode {
 
         //PINPOINT
         follower = Constants.createFollower(hardwareMap);
-        follower.setPose(new Pose(0, 0, 0));
+
+        //File Loader
+        routine = new ArrayList<>();
+
+        File closeAuto = closeAuto = AppUtil.getInstance().getSettingsFile("File.txt");
+        String[] types = ReadWriteFile.readFile(closeAuto).trim().split(",");
+
+        for (String type : types) {
+            routine.add(Double.parseDouble(type));
+        }
+
+        loadedX = routine.get(0);
+        loadedY = routine.get(1);
+        loadedHeading = routine.get(2);
+
+        // Se tem posição salva (não é 0,0,0), usa ela. Senão, começa em 0,0,0.
+        if (loadedX != 0 || loadedY != 0 || loadedHeading != 0) {
+
+            savedX = loadedY - 72;
+            savedY = loadedX - 72;
+            loadedHeading = loadedHeading - 180;
+            loadedHeading = loadedHeading % 360;
+            if (loadedHeading > 180) loadedHeading -= 360;
+            if (loadedHeading < -180) loadedHeading += 360;
+            follower.setPose(new Pose(loadedX, loadedY, loadedHeading));
+
+            poseLoaded = true;
+        } else {
+            follower.setPose(new Pose(0, 0, 0));
+            poseLoaded = false;
+        }
+        // ==========================================
 
         //TELEOP
         driver = new GamepadEx(gamepad1);
@@ -161,8 +208,6 @@ public class DebugBLUEChassis extends OpMode {
         follower.setTeleOpDrive(currentDriveForward, currentDriveStrafe, currentDriveRotate, false, 1.5708);
 //        follower.setTeleOpDrive(targetDriveForward, targetDriveStrafe, targetDriveRotate, false, 1.5708);
 
-
-
         //LIMELIGHT
         limelightChassis.updateRobotOrientation(Math.toDegrees(follower.getHeading()));
 
@@ -191,8 +236,8 @@ public class DebugBLUEChassis extends OpMode {
 
         //SHOOTING WHILE MOVING
         double shotTime= 1;
-        xGoalOffset = GOAL_BLUE_X - follower.getVelocity().getXComponent() * shotTime;
-        yGoalOffset = GOAL_BLUE_Y - follower.getVelocity().getYComponent() * shotTime;
+        xGoalOffset = GOAL_RED_X - follower.getVelocity().getXComponent() * shotTime;
+        yGoalOffset = GOAL_RED_Y - follower.getVelocity().getYComponent() * shotTime;
 
         //GOAL AND ANGLETOGOAL CALCULATIONS WITH SHOOTING WHILE MOVING
         double dx = xGoalOffset - odoX;
@@ -216,7 +261,7 @@ public class DebugBLUEChassis extends OpMode {
         if (turretAngle > 50 && turretPower > 0) {
             turretPower = 0;
         }
-        if (turretAngle < -50 && turretPower < 0) {
+        if (turretAngle < -90 && turretPower < 0) {
             turretPower = 0;
         }
         if (Math.abs(angleToGoal) < 1) {
@@ -348,6 +393,18 @@ public class DebugBLUEChassis extends OpMode {
 
         double rpm = (intakeencoder.getVelocity() / 140) * 60.0;
         telemetry.addData("rpm", rpm);
+
+        // ====== TELEMETRY DOS DADOS CARREGADOS ======
+        telemetry.addLine("--- Dados do Autônomo ---");
+        if (poseLoaded) {
+            telemetry.addData("Pose Carregada?", "SIM");
+            telemetry.addData("Loaded X", "%.2f", loadedX);
+            telemetry.addData("Loaded Y", "%.2f", loadedY);
+            telemetry.addData("Loaded Heading (deg)", "%.2f", Math.toDegrees(loadedHeading));
+        } else {
+            telemetry.addData("Pose Carregada?", "NAO (usando 0,0,0)");
+        }
+        // =============================================
 
         telemetry.update();
     }

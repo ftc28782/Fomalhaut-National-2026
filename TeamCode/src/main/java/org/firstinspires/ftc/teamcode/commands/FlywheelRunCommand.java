@@ -33,7 +33,6 @@ public class FlywheelRunCommand extends CommandBase {
     public void execute() {
         // Sempre usa robot.getDistanceToGoal() em tempo de execução
         flywheel.setVelocityForDistance(robot.getDistanceToGoal());
-        flywheel.setHoodForDistance(robot.getDistanceToGoal());
     }
 
     @Override

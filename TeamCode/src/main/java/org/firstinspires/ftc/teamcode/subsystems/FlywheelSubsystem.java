@@ -102,6 +102,7 @@ public class FlywheelSubsystem extends SubsystemBase {
      */
     public void setHoodPosition(double position) {
         hoodPosition = position;
+        hoodServo.setPosition(hoodPosition);
     }
 
     /**

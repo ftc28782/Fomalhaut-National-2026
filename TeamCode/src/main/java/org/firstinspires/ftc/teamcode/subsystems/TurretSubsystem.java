@@ -16,7 +16,7 @@ public class TurretSubsystem extends SubsystemBase {
     private final PIDFController turretPID;
 
     // PID Constants
-    public static double kP = 0.045;
+    public static double kP = 0.047;
     public static double kD = 0.0001;
     public static double kF = 0.06;
 
