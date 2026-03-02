@@ -27,8 +27,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-@TeleOp(name = "RED Alliance Teleop")
-public class DebugREDChassis extends OpMode {
+@TeleOp(name = "BLUE Alliance Teleop")
+public class BlueTeleop extends OpMode {
 
     //FOLLOWER
     Follower follower;
@@ -50,7 +50,7 @@ public class DebugREDChassis extends OpMode {
     public double TicksPerRev = 28;
     private double turretPower;
     private double hoodPosition = 1;
-    private final double GOAL_RED_X = -65, GOAL_RED_Y = 64.3;
+    private final double GOAL_RED_X = -65, GOAL_RED_Y = -64.3;
     Deadline IMUTimer;
     private double odoX, odoY;
     private double turretAngle;
@@ -121,20 +121,19 @@ public class DebugREDChassis extends OpMode {
         // Se tem posição salva (não é 0,0,0), usa ela. Senão, começa em 0,0,0.
         if (loadedX != 0 || loadedY != 0 || loadedHeading != 0) {
 
-            savedX = loadedY - 72;
+            savedX = -(loadedY - 72);
             savedY = loadedX - 72;
-            loadedHeading = loadedHeading - 180;
+            loadedHeading = loadedHeading + 90;
             loadedHeading = loadedHeading % 360;
             if (loadedHeading > 180) loadedHeading -= 360;
             if (loadedHeading < -180) loadedHeading += 360;
-            follower.setPose(new Pose(loadedX, loadedY, loadedHeading));
+            follower.setPose(new Pose(savedX, savedY, Math.toRadians(loadedHeading)));
 
             poseLoaded = true;
         } else {
-            follower.setPose(new Pose(0, 0, 0));
             poseLoaded = false;
         }
-        // ==========================================
+        follower.setPose(new Pose(0, 43, Math.toRadians(90)));
 
         //TELEOP
         driver = new GamepadEx(gamepad1);
@@ -218,15 +217,16 @@ public class DebugREDChassis extends OpMode {
                 camX = (camPose3D.getPosition().x * 39.3701);
                 camY = (camPose3D.getPosition().y * 39.3701);
                 errorVision = Math.hypot(camX - follower.getPose().getX(), camY - follower.getPose().getY());
-                if (gamepad1.a) {
+                if (gamepad1.aWasPressed()) {
                     follower.setPose(new Pose(camX, camY, follower.getHeading()));
                 }
             }
         }
 
         //HEADING RESET
-        if (gamepad1.b) {
+        if (gamepad1.bWasPressed()) {
             follower.setPose(new Pose(follower.getPose().getX(), follower.getPose().getY(), Math.toRadians(0)));
+            loadedHeading = 0;
         }
 
         // PINPOINT
@@ -235,7 +235,7 @@ public class DebugREDChassis extends OpMode {
         odoY = followerPose.getY();
 
         //SHOOTING WHILE MOVING
-        double shotTime= 1;
+        double shotTime = 1;
         xGoalOffset = GOAL_RED_X - follower.getVelocity().getXComponent() * shotTime;
         yGoalOffset = GOAL_RED_Y - follower.getVelocity().getYComponent() * shotTime;
 
@@ -245,7 +245,7 @@ public class DebugREDChassis extends OpMode {
 
         distance = Math.hypot(dx, dy);
 
-        heading = Math.toDegrees(follower.getTotalHeading());
+        heading = Math.toDegrees(follower.getHeading());
 
         double angleToGoal = AngleUnit.normalizeDegrees(Math.toDegrees(Math.atan2(dy, dx)) - heading + turretAngle);
         turretPower = turretPID.calculate(angleToGoal);
@@ -261,7 +261,7 @@ public class DebugREDChassis extends OpMode {
         if (turretAngle > 50 && turretPower > 0) {
             turretPower = 0;
         }
-        if (turretAngle < -90 && turretPower < 0) {
+        if (turretAngle < -75 && turretPower < 0) {
             turretPower = 0;
         }
         if (Math.abs(angleToGoal) < 1) {
@@ -281,19 +281,19 @@ public class DebugREDChassis extends OpMode {
         PDchange = false;
         if (gamepad1.dpadLeftWasPressed()) {
             tP += stepSizes[stepIndex];
-             PDchange = true;
+            PDchange = true;
         }
         if (gamepad1.dpadRightWasPressed()) {
             tP -= stepSizes[stepIndex];
-             PDchange = true;
+            PDchange = true;
         }
         if (gamepad1.dpadUpWasPressed()) {
             tD += stepSizes[stepIndex];
-             PDchange = true;
+            PDchange = true;
         }
         if (gamepad1.dpadDownWasPressed()) {
             tD -= stepSizes[stepIndex];
-             PDchange = true;
+            PDchange = true;
         }
 
         //SHOOTER SYSTEM
@@ -308,11 +308,11 @@ public class DebugREDChassis extends OpMode {
 //            targetVelocity = targetVelocity + 100;
 //    }
 
-    double shooter_power = (targetVelocity * TicksPerRev / 60);
+        double shooter_power = (targetVelocity * TicksPerRev / 60);
 
 
-    double ShooterVel = (shooter2.getVelocity() * 60 / TicksPerRev);
-    double error = targetVelocity - ShooterVel;
+        double ShooterVel = (shooter2.getVelocity() * 60 / TicksPerRev);
+        double error = targetVelocity - ShooterVel;
 
         if(gamepad1.xWasPressed()) {
             a++;
@@ -339,23 +339,23 @@ public class DebugREDChassis extends OpMode {
 //            hoodPosition = hoodPosition - 0.1;
 //        }
 
-    //INTAKE AND LAUCHER SYSTEM
-    boolean Intake = gamepad1.left_trigger > 0.1;
-    boolean Launch = gamepad1.right_trigger > 0.1;
-    boolean Transfer = Math.abs(error) < 200;
+        //INTAKE AND LAUCHER SYSTEM
+        boolean Intake = gamepad1.left_trigger > 0.1;
+        boolean Launch = gamepad1.right_trigger > 0.1;
+        boolean Transfer = Math.abs(error) < 200;
 
-    if (Launch && Transfer) {
-        transferServo.setPosition(0);
-    } else {
-        transferServo.setPosition(0.7);
+        if (Launch && Transfer) {
+            transferServo.setPosition(0);
+        } else {
+            transferServo.setPosition(0.7);
         }
         if(Launch||Intake) {
-        intake.setPower(1);
-    } else {
-        intake.setPower(0);
+            intake.setPower(1);
+        } else {
+            intake.setPower(0);
         }
 
-       //TELEMETRIES
+        //TELEMETRIES
         telemetry.addData("P","%.5f (D-Pad U/D)",P);
         telemetry.addData("F","%.5f (D-Pad L/R)", F);
         telemetry.addData("Step Size (Y to switch)","%.4f",stepSizes[stepIndex]);
@@ -398,9 +398,9 @@ public class DebugREDChassis extends OpMode {
         telemetry.addLine("--- Dados do Autônomo ---");
         if (poseLoaded) {
             telemetry.addData("Pose Carregada?", "SIM");
-            telemetry.addData("Loaded X", "%.2f", loadedX);
-            telemetry.addData("Loaded Y", "%.2f", loadedY);
-            telemetry.addData("Loaded Heading (deg)", "%.2f", Math.toDegrees(loadedHeading));
+            telemetry.addData("Loaded X", "%.2f", savedX);
+            telemetry.addData("Loaded Y", "%.2f", savedY);
+            telemetry.addData("Loaded Heading (deg)", "%.2f", loadedHeading);
         } else {
             telemetry.addData("Pose Carregada?", "NAO (usando 0,0,0)");
         }

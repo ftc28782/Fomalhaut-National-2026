@@ -21,7 +21,7 @@ import org.firstinspires.ftc.teamcode.commands.TurretTrackCommand;
  * Command-based autonomous example.
  * Demonstrates how to integrate subsystem commands with Pedro Pathing.
  */
-@Autonomous(name = "Command Auto Back Red)")
+@Autonomous(name = "Command Auto Back Red")
 public class CommandAutoBackRed extends CommandOpMode {
 
     private Robot robot;
@@ -30,9 +30,10 @@ public class CommandAutoBackRed extends CommandOpMode {
     @Override
     public void initialize() {
 
-        robot.setAlliance(Robot.Alliance.AUTO_RED);
         // Initialize robot with starting pose
         robot = new Robot(hardwareMap, new Pose(118.070, 130.521, Math.toRadians(180)));
+
+        robot.setAlliance(Robot.Alliance.AUTO_RED);
 
         // Build paths
         paths = new AutoPaths();

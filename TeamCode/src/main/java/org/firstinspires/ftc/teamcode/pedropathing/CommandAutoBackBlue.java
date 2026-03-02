@@ -30,10 +30,10 @@ public class CommandAutoBackBlue extends CommandOpMode {
     @Override
     public void initialize() {
 
-        robot.setAlliance(Robot.Alliance.AUTO_BLUE);
-
         // Initialize robot with starting pose
         robot = new Robot(hardwareMap, new Pose(118.070, 130.521, Math.toRadians(180)));
+
+        robot.setAlliance(Robot.Alliance.AUTO_BLUE);
 
         // Build paths
         paths = new AutoPaths();

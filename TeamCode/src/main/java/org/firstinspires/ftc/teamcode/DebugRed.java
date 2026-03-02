@@ -19,7 +19,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
 @TeleOp(name = "RedTeleopWithoutSave")
-public class RedTeleopWithoutSave extends OpMode {
+public class DebugRed extends OpMode {
 
     //FOLLOWER
     Follower follower;
