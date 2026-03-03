@@ -263,7 +263,7 @@ public class CommandAutoBackRed extends CommandOpMode {
     }
 
     /**
-     * Inner class containing all autonomous paths, starting from the robot's initial pose.
+     * oInner class containing all autonomous paths, starting from the robot's initial pose.
      */
     private class AutoPaths {
         public PathChain Intake1;
