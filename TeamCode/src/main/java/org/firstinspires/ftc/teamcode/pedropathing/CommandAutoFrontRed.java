@@ -286,7 +286,7 @@ public class CommandAutoFrontRed extends CommandOpMode {
             toShoot1 = robot.follower.pathBuilder()
                     .addPath(
                             new BezierLine(
-                                    new Pose(33.774, 136.000),
+                                    startPose,
                                     new Pose(49.617, 87.990)
                             )
                     )
