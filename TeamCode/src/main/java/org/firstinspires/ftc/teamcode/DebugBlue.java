@@ -18,8 +18,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
-@TeleOp(name = "RedTeleopWithoutSave")
-public class DebugRed extends OpMode {
+@TeleOp(name = "BlueTeleopWithoutSave")
+public class DebugBlue extends OpMode {
 
     //FOLLOWER
     Follower follower;
@@ -41,7 +41,7 @@ public class DebugRed extends OpMode {
     public double TicksPerRev = 28;
     private double turretPower;
     private double hoodPosition = 1;
-    private final double GOAL_RED_X = -65, GOAL_RED_Y = 64.3;
+    private final double GOAL_RED_X = -65, GOAL_RED_Y = -64.3;
     Deadline IMUTimer;
     private double odoX, odoY;
     private double turretAngle;

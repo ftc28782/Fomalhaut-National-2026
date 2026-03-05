@@ -367,10 +367,20 @@ public class CommandAutoFrontBlue extends CommandOpMode {
                     .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                     .build();
 
-            EndPoint = robot.follower.pathBuilder()
+            toShoot4 = robot.follower.pathBuilder()
                     .addPath(
                             new BezierLine(
                                     new Pose(17.081, 34.668),
+                                    new Pose(51.133, 88.557)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(129))
+                    .build();
+
+            EndPoint = robot.follower.pathBuilder()
+                    .addPath(
+                            new BezierLine(
+                                    new Pose(51.133, 88.557),
                                     new Pose(28.169, 72.161)
                             )
                     )
