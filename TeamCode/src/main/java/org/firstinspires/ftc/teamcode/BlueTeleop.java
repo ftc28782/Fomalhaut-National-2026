@@ -57,8 +57,8 @@ public class BlueTeleop extends OpMode {
     PIDFController turretPID;
     private double P = 270;
     private double F = 4;
-    private double tP = 0.047;
-    private double tD = 0.0001;
+    private double tP = 0.034;
+    private double tD = 0.0003;
     private double tF = 0.06;
     private double a = 0;
     DcMotorEx g,h,i,j;
@@ -133,7 +133,6 @@ public class BlueTeleop extends OpMode {
         } else {
             poseLoaded = false;
         }
-        follower.setPose(new Pose(0, 43, Math.toRadians(90)));
 
         //TELEOP
         driver = new GamepadEx(gamepad1);
@@ -204,8 +203,8 @@ public class BlueTeleop extends OpMode {
         }
 
 //        // Use the smoothed values when commanding the follower teleop drive
-        follower.setTeleOpDrive(currentDriveForward, currentDriveStrafe, currentDriveRotate, false, 1.5708);
-//        follower.setTeleOpDrive(targetDriveForward, targetDriveStrafe, targetDriveRotate, false, 1.5708);
+        follower.setTeleOpDrive(currentDriveForward, currentDriveStrafe, currentDriveRotate, false, -1.5708);
+//        follower.setTeleOpDrive(targetDriveForward, targetDriveStrafe, targetDriveRotate, false, -1.5708);
 
         //LIMELIGHT
         limelightChassis.updateRobotOrientation(Math.toDegrees(follower.getHeading()));
@@ -258,10 +257,10 @@ public class BlueTeleop extends OpMode {
             turretPower = turretPower - tF;
         }
 
-        if (turretAngle > 50 && turretPower > 0) {
+        if (turretAngle > 65 && turretPower > 0) {
             turretPower = 0;
         }
-        if (turretAngle < -75 && turretPower < 0) {
+        if (turretAngle < -110 && turretPower < 0) {
             turretPower = 0;
         }
         if (Math.abs(angleToGoal) < 1) {
@@ -342,12 +341,12 @@ public class BlueTeleop extends OpMode {
         //INTAKE AND LAUCHER SYSTEM
         boolean Intake = gamepad1.left_trigger > 0.1;
         boolean Launch = gamepad1.right_trigger > 0.1;
-        boolean Transfer = Math.abs(error) < 200;
+        boolean Transfer = Math.abs(error) < 250;
 
         if (Launch && Transfer) {
             transferServo.setPosition(0);
         } else {
-            transferServo.setPosition(0.7);
+            transferServo.setPosition(0.8);
         }
         if(Launch||Intake) {
             intake.setPower(1);

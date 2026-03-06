@@ -34,14 +34,14 @@ public class CommandAutoFrontBlue extends CommandOpMode {
     private Timer teleopTimer;
     private int pathState = 0;
     private double startHeading = Math.toRadians(180);
-    public Pose startPose = new Pose(33.7, 135, startHeading);
+    public Pose startPose = new Pose(33.7, 133, startHeading);
     private List<Double> routine;
 
     @Override
     public void initialize() {
 
         // Initialize robot, timer, and paths
-        robot = new Robot(hardwareMap,startPose);
+        robot = new Robot(hardwareMap, startPose);
         pathTimer = new Timer();
         teleopTimer = new Timer();
 
@@ -79,11 +79,11 @@ public class CommandAutoFrontBlue extends CommandOpMode {
         statePathUpdate();
 
         robot.flywheel.setVelocityForDistance(robot.getDistanceToGoal());
-        robot.flywheel.setHoodPosition(0.7);
+        robot.flywheel.setHoodPosition(0.8);
         Intake();
         endIntake();
 
-        if (pathState == 7 || pathState == 8 || pathState == 9){
+        if (pathState == 7 || pathState == 8 || pathState == 9) {
             //File saver
             String routineString = routine.toString();
             routineString = routineString.substring(1, routineString.length() - 1);
@@ -202,18 +202,7 @@ public class CommandAutoFrontBlue extends CommandOpMode {
                 }
                 ShootLogic(8);
                 break;
-
-            case 8: // Ponto final (EndPoint)
-                if (!stateInit) {
-                    robot.follower.followPath(paths.EndPoint);
-                    stateInit = true;
-                }
-                if (!robot.follower.isBusy()) {
-                    setPathState(9);
-                }
-                break;
-
-            case 9: // Estado final - robô parado, dados já salvos
+            case 8: // Estado final - robô parado, dados já salvos
                 // Não faz nada, autônomo acabou
                 break;
         }
@@ -227,6 +216,7 @@ public class CommandAutoFrontBlue extends CommandOpMode {
     }
 
     // liga (chama quando apertar botão)
+
     /**
      * Lógica inteligente de tiro: só liga o intake/transfer se a flywheel estiver pronta.
      */
@@ -247,6 +237,7 @@ public class CommandAutoFrontBlue extends CommandOpMode {
             pathTimer.resetTimer();
         }
     }
+
     public void Shoot() {
         robot.intake.setPower(1);
         if (robot.flywheel.isAtTargetVelocity() && !robot.follower.isBusy()) {
@@ -256,6 +247,7 @@ public class CommandAutoFrontBlue extends CommandOpMode {
             robot.transfer.stop();
         }
     }
+
     public void endShoot() {
         robot.transfer.stop();
     }
@@ -263,6 +255,7 @@ public class CommandAutoFrontBlue extends CommandOpMode {
     public void Intake() {
         robot.intake.setPower(1);
     }
+
     public void endIntake() {
         robot.intake.setPower(1);
     }
@@ -280,13 +273,12 @@ public class CommandAutoFrontBlue extends CommandOpMode {
         public PathChain Path10;
         public PathChain Intake3;
         public PathChain toShoot4;
-        public PathChain EndPoint;
 
         public AutoPaths() {
             toShoot1 = robot.follower.pathBuilder()
                     .addPath(
                             new BezierLine(
-                                    startPose,
+                                    new Pose(33.700, 135.000),
                                     new Pose(49.617, 87.990)
                             )
                     )
@@ -298,7 +290,7 @@ public class CommandAutoFrontBlue extends CommandOpMode {
                             new BezierCurve(
                                     new Pose(49.617, 87.990),
                                     new Pose(47.122, 82.819),
-                                    new Pose(20.360, 83.919)
+                                    new Pose(18.332, 83.629)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
@@ -307,7 +299,7 @@ public class CommandAutoFrontBlue extends CommandOpMode {
             toShoot2 = robot.follower.pathBuilder()
                     .addPath(
                             new BezierLine(
-                                    new Pose(20.360, 83.919),
+                                    new Pose(18.332, 83.629),
                                     new Pose(51.497, 86.281)
                             )
                     )
@@ -319,7 +311,7 @@ public class CommandAutoFrontBlue extends CommandOpMode {
                             new BezierCurve(
                                     new Pose(51.497, 86.281),
                                     new Pose(51.508, 55.743),
-                                    new Pose(17.475, 59.136)
+                                    new Pose(11.680, 60.005)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
@@ -328,9 +320,9 @@ public class CommandAutoFrontBlue extends CommandOpMode {
             Gate1 = robot.follower.pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(17.475, 59.136),
-                                    new Pose(31.708, 68.528),
-                                    new Pose(17.131, 69.201)
+                                    new Pose(11.680, 60.005),
+                                    new Pose(26.782, 57.808),
+                                    new Pose(18.580, 69.201)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
@@ -339,7 +331,7 @@ public class CommandAutoFrontBlue extends CommandOpMode {
             toShoot3 = robot.follower.pathBuilder()
                     .addPath(
                             new BezierLine(
-                                    new Pose(17.131, 69.201),
+                                    new Pose(18.580, 69.201),
                                     new Pose(51.133, 88.557)
                             )
                     )
@@ -361,7 +353,7 @@ public class CommandAutoFrontBlue extends CommandOpMode {
                             new BezierCurve(
                                     new Pose(45.195, 43.564),
                                     new Pose(39.218, 33.224),
-                                    new Pose(17.081, 34.668)
+                                    new Pose(13.866, 35.247)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
@@ -370,21 +362,11 @@ public class CommandAutoFrontBlue extends CommandOpMode {
             toShoot4 = robot.follower.pathBuilder()
                     .addPath(
                             new BezierLine(
-                                    new Pose(17.081, 34.668),
-                                    new Pose(51.133, 88.557)
+                                    new Pose(13.866, 35.247),
+                                    new Pose(64.171, 97.539)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(129))
-                    .build();
-
-            EndPoint = robot.follower.pathBuilder()
-                    .addPath(
-                            new BezierLine(
-                                    new Pose(51.133, 88.557),
-                                    new Pose(28.169, 72.161)
-                            )
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(180))
+                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(142))
                     .build();
         }
     }

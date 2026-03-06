@@ -127,7 +127,7 @@ public class FlywheelSubsystem extends SubsystemBase {
     }
 
     public boolean isAtTargetVelocity() {
-        return Math.abs(getVelocityError()) < 200;
+        return Math.abs(getVelocityError()) < 250;
     }
 
     /**

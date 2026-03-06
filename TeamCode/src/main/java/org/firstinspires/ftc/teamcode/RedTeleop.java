@@ -55,8 +55,8 @@ public class RedTeleop extends OpMode {
     PIDFController turretPID;
     private double P = 270;
     private double F = 4;
-    private double tP = 0.047;
-    private double tD = 0.0001;
+    private double tP = 0.034;
+    private double tD = 0.0003;
     private double tF = 0.06;
     private double a = 0;
     DcMotorEx g,h,i,j;
@@ -340,12 +340,12 @@ public class RedTeleop extends OpMode {
     //INTAKE AND LAUCHER SYSTEM
     boolean Intake = gamepad1.left_trigger > 0.1;
     boolean Launch = gamepad1.right_trigger > 0.1;
-    boolean Transfer = Math.abs(error) < 200;
+    boolean Transfer = Math.abs(error) < 250;
 
     if (Launch && Transfer) {
         transferServo.setPosition(0);
     } else {
-        transferServo.setPosition(0.7);
+        transferServo.setPosition(0.8);
         }
         if(Launch||Intake) {
         intake.setPower(1);

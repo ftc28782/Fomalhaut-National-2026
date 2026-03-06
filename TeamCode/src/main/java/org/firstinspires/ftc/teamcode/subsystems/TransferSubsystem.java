@@ -38,7 +38,7 @@ public class TransferSubsystem extends SubsystemBase {
     /**
      * Stop the transfer servo.
      */
-    public void stop() { setPosition(0.7); }
+    public void stop() { setPosition(0.8); }
 
     /**
      * Get the current power.
